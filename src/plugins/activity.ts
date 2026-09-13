@@ -29,42 +29,50 @@ const DEFAULT_ROWS = "commits,reviews,prs,issues,comments";
 export const activityPlugin: Plugin = {
   name: "activity",
   async run(ctx) {
+    // All counts are all-time. GraphQL gives lifetime totals for PRs / issues /
+    // comments directly; commits and reviews have no lifetime GraphQL field, so
+    // use search (with the last-year contributionsCollection as a fallback).
     const data = await ctx.graphql(
       `query($login: String!) {
         user(login: $login) {
           contributionsCollection {
             totalCommitContributions
             totalPullRequestReviewContributions
-            totalPullRequestContributions
-            totalIssueContributions
           }
+          pullRequests { totalCount }
+          issues { totalCount }
           issueComments { totalCount }
         }
       }`,
       { login: ctx.user },
     );
 
-    const c = data.user.contributionsCollection;
+    const user = data.user;
+    const c = user.contributionsCollection;
+    const enc = encodeURIComponent(ctx.user);
 
-    // Commits: all-time authored commits (matches metrics). The GraphQL
-    // contributionsCollection only covers the last year, so use commit search;
-    // fall back to the last-year count if search is unavailable/rate-limited.
-    let commitCount: number = c.totalCommitContributions;
-    try {
-      const search = await ctx.rest(
-        `/search/commits?q=author:${encodeURIComponent(ctx.user)}&per_page=1`,
-      );
-      if (typeof search.total_count === "number") commitCount = search.total_count;
-    } catch (error) {
-      console.warn("activity: commit search failed, using last-year commits", error);
-    }
+    const searchCount = async (query: string, fallback: number): Promise<number> => {
+      try {
+        const res = await ctx.rest(`/search/${query}&per_page=1`);
+        return typeof res.total_count === "number" ? res.total_count : fallback;
+      } catch (error) {
+        console.warn(`activity: search "${query}" failed, using fallback`, error);
+        return fallback;
+      }
+    };
+
+    const commitCount = await searchCount(`commits?q=author:${enc}`, c.totalCommitContributions);
+    const reviewCount = await searchCount(
+      `issues?q=reviewed-by:${enc}+type:pr`,
+      c.totalPullRequestReviewContributions,
+    );
 
     const metrics: Record<string, Metric> = {
       commits: { icon: "commit", label: "Commits", count: commitCount },
-      reviews: { icon: "review", label: "Pull requests reviewed", count: c.totalPullRequestReviewContributions },
-      prs: { icon: "pr", label: "Pull requests opened", count: c.totalPullRequestContributions },
-      issues: { icon: "issue", label: "Issues opened", count: c.totalIssueContributions },
-      comments: { icon: "comment", label: "issue comments", count: data.user.issueComments.totalCount },
+      reviews: { icon: "review", label: "Pull requests reviewed", count: reviewCount },
+      prs: { icon: "pr", label: "Pull requests opened", count: user.pullRequests.totalCount },
+      issues: { icon: "issue", label: "Issues opened", count: user.issues.totalCount },
+      comments: { icon: "comment", label: "issue comments", count: user.issueComments.totalCount },
     };
 
     // Which rows to show, and in what order — configurable via METRICS_ACTIVITY.

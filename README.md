@@ -32,11 +32,16 @@ GITHUB_TOKEN=$(gh auth token) METRICS_USER=<your-login> npm start
 ## Automate (GitHub Actions)
 
 `.github/workflows/metrics.yml` runs daily, regenerates `metrics.svg`, and
-commits it back. Reference it from your profile README:
+publishes it to the dedicated `metrics-output` branch (`single-commit`, so that
+branch never accumulates history and `main` stays code-only). Reference it from
+your profile README:
 
 ```md
-<img src="https://raw.githubusercontent.com/<owner>/profile-metrics/main/metrics.svg" width="100%" />
+<img src="https://raw.githubusercontent.com/Ishi-eenn/profile-metrics/metrics-output/metrics.svg" width="100%" />
 ```
+
+On pull requests the workflow only generates the SVG and uploads it as an
+artifact — it does not publish, so `main` can be fully branch-protected.
 
 ## Add a plugin
 

@@ -23,7 +23,10 @@ jobs:
       - name: Generate metrics.svg
         run: npm start
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Prefer a personal access token (METRICS_TOKEN) so private
+          # contributions are counted like metrics; fall back to the built-in
+          # token (public data only) when the secret is not set.
+          GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN || secrets.GITHUB_TOKEN }}
           METRICS_USER: Ishi-eenn
           # Section order — reorder / drop whole sections (omit a name to hide it).
           METRICS_ORDER: header,activity,languages

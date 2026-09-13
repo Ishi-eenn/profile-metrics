@@ -67,6 +67,14 @@ your profile README:
 On pull requests the workflow only generates the SVG and uploads it as an
 artifact — it does not publish, so `main` can be fully branch-protected.
 
+### Private contributions (optional)
+
+By default the workflow uses the built-in `GITHUB_TOKEN`, which only sees
+**public** data — so the commit / review / issue counts reflect public activity
+only. To count private contributions too (and match a metrics-style total), add
+a Personal Access Token as a repository secret named `METRICS_TOKEN`; the
+workflow uses it automatically when present.
+
 ## Add a plugin
 
 1. Create `src/plugins/<name>.ts` exporting a `Plugin`.

@@ -69,6 +69,14 @@ GITHUB_TOKEN=$(gh auth token) METRICS_USER=<あなたのログイン名> npm sta
 プルリクエストでは SVG の生成と artifact へのアップロードのみを行い、publish は
 しません。そのため `main` にブランチ保護をかけたまま運用できます。
 
+### プライベート貢献（任意）
+
+デフォルトではビルトインの `GITHUB_TOKEN` を使うため、**公開データのみ**が対象です
+（commit / review / issue のカウントは公開分だけ）。プライベート貢献も数えたい
+（metrics 相当の総数に合わせたい）場合は、`METRICS_TOKEN` という名前の
+リポジトリシークレットに Personal Access Token を登録してください。存在すれば
+ワークフローが自動的にそちらを使います。
+
 ## プラグインを追加する
 
 1. `src/plugins/<name>.ts` を作成し、`Plugin` を export します。

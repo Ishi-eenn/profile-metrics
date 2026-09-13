@@ -1,8 +1,9 @@
 import { promises as fs } from "node:fs";
-import { makeGraphql } from "./github";
+import { makeGraphql, makeRest } from "./github";
 import { renderCard } from "./render";
 import { headerPlugin } from "./plugins/header";
 import { languagesPlugin } from "./plugins/languages";
+import { activityPlugin } from "./plugins/activity";
 import type { Plugin, PluginContext, Section } from "./types";
 
 const user = process.env.METRICS_USER ?? "Ishi-eenn";
@@ -14,10 +15,32 @@ if (!token) {
   process.exit(1);
 }
 
-const ctx: PluginContext = { user, token, graphql: makeGraphql(token) };
+const ctx: PluginContext = {
+  user,
+  token,
+  graphql: makeGraphql(token),
+  rest: makeRest(token),
+};
 
-// Register plugins here — add one at a time.
-const plugins: Plugin[] = [headerPlugin, languagesPlugin];
+// Available plugins, keyed by name. Add one at a time.
+const registry: Record<string, Plugin> = {
+  header: headerPlugin,
+  activity: activityPlugin,
+  languages: languagesPlugin,
+};
+
+// Section order is configurable via METRICS_ORDER (comma-separated plugin
+// names) — e.g. swap "activity" and "languages" without touching code.
+const DEFAULT_ORDER = "header,activity,languages";
+const plugins: Plugin[] = (process.env.METRICS_ORDER ?? DEFAULT_ORDER)
+  .split(",")
+  .map((name) => name.trim())
+  .filter(Boolean)
+  .map((name) => {
+    if (!registry[name]) console.warn(`unknown plugin in METRICS_ORDER: ${name}`);
+    return registry[name];
+  })
+  .filter((plugin): plugin is Plugin => Boolean(plugin));
 
 const sections: Section[] = [];
 for (const plugin of plugins) {

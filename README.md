@@ -20,8 +20,30 @@ src/
   index.ts        runs plugins with per-plugin error isolation
   plugins/
     header.ts     avatar + name + follower/repo counts
+    activity.ts   contribution counts (commits, PRs, reviews, issues, comments)
     languages.ts  stacked language bar + legend
 ```
+
+## Section order & visibility
+
+Sections are ordered by `METRICS_ORDER` (comma-separated plugin names). Reorder
+or **hide** a section by omitting its name — no code changes needed:
+
+```bash
+METRICS_ORDER=header,languages,activity npm start   # swap activity ⇄ languages
+METRICS_ORDER=header,activity npm start             # hide languages entirely
+```
+
+Activity rows are likewise controlled by `METRICS_ACTIVITY` (any subset/order of
+`commits,reviews,prs,issues,comments`):
+
+```bash
+METRICS_ACTIVITY=commits,prs,comments npm start     # only these three rows
+```
+
+Defaults: `METRICS_ORDER=header,activity,languages`,
+`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`. Set them in the
+workflow's `Generate` step `env:` for automated runs.
 
 ## Run locally
 
@@ -44,6 +66,14 @@ your profile README:
 
 On pull requests the workflow only generates the SVG and uploads it as an
 artifact — it does not publish, so `main` can be fully branch-protected.
+
+### Private contributions (optional)
+
+By default the workflow uses the built-in `GITHUB_TOKEN`, which only sees
+**public** data — so the commit / review / issue counts reflect public activity
+only. To count private contributions too (and match a metrics-style total), add
+a Personal Access Token as a repository secret named `METRICS_TOKEN`; the
+workflow uses it automatically when present.
 
 ## Add a plugin
 

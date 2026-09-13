@@ -36,6 +36,7 @@ export function renderCard(sections: Section[]): string {
     .title { fill: #0366d6; font-size: 15px; font-weight: 600; }
     .muted { fill: #959da5; font-size: 12px; }
     .value { font-size: 13px; }
+    .icon { fill: #777; }
     .error { fill: #cb2431; font-size: 13px; }
   </style>
 ${parts.join("\n")}

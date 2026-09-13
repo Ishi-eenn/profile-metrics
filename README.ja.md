@@ -22,8 +22,30 @@ src/
   index.ts        プラグインをエラー隔離しつつ実行
   plugins/
     header.ts     アバター + 名前 + フォロワー/リポジトリ数
+    activity.ts   コントリビューション集計（commit / PR / レビュー / issue / コメント）
     languages.ts  言語の積み上げバー + 凡例
 ```
+
+## セクションの順序・表示/非表示
+
+セクションの並びは `METRICS_ORDER`（プラグイン名のカンマ区切り）で決まります。
+名前を**外せば非表示**になり、並び替えもコード変更なしで可能です:
+
+```bash
+METRICS_ORDER=header,languages,activity npm start   # activity ⇄ languages を入替
+METRICS_ORDER=header,activity npm start             # languages を非表示
+```
+
+Activity の各行も `METRICS_ACTIVITY`（`commits,reviews,prs,issues,comments` の
+任意の部分集合・順序）で制御できます:
+
+```bash
+METRICS_ACTIVITY=commits,prs,comments npm start     # この3行だけ表示
+```
+
+デフォルトは `METRICS_ORDER=header,activity,languages`、
+`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`。自動実行では
+ワークフローの `Generate` ステップの `env:` で設定します。
 
 ## ローカル実行
 
@@ -46,6 +68,14 @@ GITHUB_TOKEN=$(gh auth token) METRICS_USER=<あなたのログイン名> npm sta
 
 プルリクエストでは SVG の生成と artifact へのアップロードのみを行い、publish は
 しません。そのため `main` にブランチ保護をかけたまま運用できます。
+
+### プライベート貢献（任意）
+
+デフォルトではビルトインの `GITHUB_TOKEN` を使うため、**公開データのみ**が対象です
+（commit / review / issue のカウントは公開分だけ）。プライベート貢献も数えたい
+（metrics 相当の総数に合わせたい）場合は、`METRICS_TOKEN` という名前の
+リポジトリシークレットに Personal Access Token を登録してください。存在すれば
+ワークフローが自動的にそちらを使います。
 
 ## プラグインを追加する
 

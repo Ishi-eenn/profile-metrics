@@ -1,5 +1,5 @@
 import { promises as fs } from "node:fs";
-import { makeGraphql } from "./github";
+import { makeGraphql, makeRest } from "./github";
 import { renderCard } from "./render";
 import { headerPlugin } from "./plugins/header";
 import { languagesPlugin } from "./plugins/languages";
@@ -19,6 +19,7 @@ const ctx: PluginContext = {
   user,
   token,
   graphql: makeGraphql(token),
+  rest: makeRest(token),
 };
 
 // Available plugins, keyed by name. Add one at a time.

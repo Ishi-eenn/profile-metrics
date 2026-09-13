@@ -45,8 +45,22 @@ export const activityPlugin: Plugin = {
     );
 
     const c = data.user.contributionsCollection;
+
+    // Commits: all-time authored commits (matches metrics). The GraphQL
+    // contributionsCollection only covers the last year, so use commit search;
+    // fall back to the last-year count if search is unavailable/rate-limited.
+    let commitCount: number = c.totalCommitContributions;
+    try {
+      const search = await ctx.rest(
+        `/search/commits?q=author:${encodeURIComponent(ctx.user)}&per_page=1`,
+      );
+      if (typeof search.total_count === "number") commitCount = search.total_count;
+    } catch (error) {
+      console.warn("activity: commit search failed, using last-year commits", error);
+    }
+
     const metrics: Record<string, Metric> = {
-      commits: { icon: "commit", label: "Commits", count: c.totalCommitContributions },
+      commits: { icon: "commit", label: "Commits", count: commitCount },
       reviews: { icon: "review", label: "Pull requests reviewed", count: c.totalPullRequestReviewContributions },
       prs: { icon: "pr", label: "Pull requests opened", count: c.totalPullRequestContributions },
       issues: { icon: "issue", label: "Issues opened", count: c.totalIssueContributions },

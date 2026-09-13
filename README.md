@@ -1,5 +1,7 @@
 # profile-metrics
 
+**English** | [日本語](README.ja.md)
+
 A minimal, `metrics`-style GitHub profile SVG generator built plugin-by-plugin.
 
 Each plugin fetches its own data and returns one section; the runner isolates

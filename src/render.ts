@@ -32,6 +32,7 @@ export function renderCard(sections: Section[]): string {
        a mid-gray that stays legible on both light and dark backgrounds
        without detecting the viewer's theme. */
     text { fill: #777; }
+    .name { fill: #0366d6; }
     .title { fill: #0366d6; font-size: 15px; font-weight: 600; }
     .muted { fill: #959da5; font-size: 12px; }
     .value { font-size: 13px; }

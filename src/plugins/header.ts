@@ -33,7 +33,7 @@ export const headerPlugin: Plugin = {
       body: `
         <defs><clipPath id="avatar-clip"><circle cx="28" cy="28" r="28"/></clipPath></defs>
         <image href="${avatar}" x="0" y="0" width="56" height="56" clip-path="url(#avatar-clip)" />
-        <text x="72" y="20" font-size="17" font-weight="600">${name}</text>
+        <text x="72" y="20" class="name" font-size="17" font-weight="600">${name}</text>
         <text x="72" y="40" class="muted">@${escapeXml(user.login)}</text>
         <text x="72" y="56" class="muted">${escapeXml(stats)}</text>`,
     };

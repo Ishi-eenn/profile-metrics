@@ -22,21 +22,30 @@ src/
   index.ts        プラグインをエラー隔離しつつ実行
   plugins/
     header.ts     アバター + 名前 + フォロワー/リポジトリ数
-    activity.ts   最近の公開アクティビティ（octicon 付き）
+    activity.ts   コントリビューション集計（commit / PR / レビュー / issue / コメント）
     languages.ts  言語の積み上げバー + 凡例
 ```
 
-## セクションの順序
+## セクションの順序・表示/非表示
 
-セクションの並びは `METRICS_ORDER` 環境変数（プラグイン名のカンマ区切り）で
-決まります。コードを触らずに並び替え・省略ができます:
+セクションの並びは `METRICS_ORDER`（プラグイン名のカンマ区切り）で決まります。
+名前を**外せば非表示**になり、並び替えもコード変更なしで可能です:
 
 ```bash
 METRICS_ORDER=header,languages,activity npm start   # activity ⇄ languages を入替
+METRICS_ORDER=header,activity npm start             # languages を非表示
 ```
 
-デフォルトは `header,activity,languages`。自動実行ではワークフローの
-`Generate` ステップの `env:` で設定します。
+Activity の各行も `METRICS_ACTIVITY`（`commits,reviews,prs,issues,comments` の
+任意の部分集合・順序）で制御できます:
+
+```bash
+METRICS_ACTIVITY=commits,prs,comments npm start     # この3行だけ表示
+```
+
+デフォルトは `METRICS_ORDER=header,activity,languages`、
+`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`。自動実行では
+ワークフローの `Generate` ステップの `env:` で設定します。
 
 ## ローカル実行
 

@@ -13,14 +13,10 @@ export type GraphqlFn = <T = any>(
   variables?: Record<string, unknown>,
 ) => Promise<T>;
 
-/** GET a REST endpoint (path relative to https://api.github.com). */
-export type RestGetFn = <T = any>(path: string) => Promise<T>;
-
 export interface PluginContext {
   user: string;
   token: string;
   graphql: GraphqlFn;
-  rest: RestGetFn;
 }
 
 /**

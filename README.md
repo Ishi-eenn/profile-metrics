@@ -20,21 +20,30 @@ src/
   index.ts        runs plugins with per-plugin error isolation
   plugins/
     header.ts     avatar + name + follower/repo counts
-    activity.ts   recent public activity feed (octicons)
+    activity.ts   contribution counts (commits, PRs, reviews, issues, comments)
     languages.ts  stacked language bar + legend
 ```
 
-## Section order
+## Section order & visibility
 
-Sections are ordered by the `METRICS_ORDER` env var (comma-separated plugin
-names), so you can reorder or drop sections without touching code:
+Sections are ordered by `METRICS_ORDER` (comma-separated plugin names). Reorder
+or **hide** a section by omitting its name — no code changes needed:
 
 ```bash
 METRICS_ORDER=header,languages,activity npm start   # swap activity ⇄ languages
+METRICS_ORDER=header,activity npm start             # hide languages entirely
 ```
 
-Default: `header,activity,languages`. Set it in the workflow's `Generate`
-step `env:` for automated runs.
+Activity rows are likewise controlled by `METRICS_ACTIVITY` (any subset/order of
+`commits,reviews,prs,issues,comments`):
+
+```bash
+METRICS_ACTIVITY=commits,prs,comments npm start     # only these three rows
+```
+
+Defaults: `METRICS_ORDER=header,activity,languages`,
+`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`. Set them in the
+workflow's `Generate` step `env:` for automated runs.
 
 ## Run locally
 

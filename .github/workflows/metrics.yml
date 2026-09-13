@@ -25,6 +25,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           METRICS_USER: Ishi-eenn
+          # Section order — reorder / drop sections here without touching code.
+          METRICS_ORDER: header,activity,languages
 
       - name: Stage output
         run: |

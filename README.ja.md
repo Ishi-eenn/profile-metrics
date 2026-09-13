@@ -22,8 +22,21 @@ src/
   index.ts        プラグインをエラー隔離しつつ実行
   plugins/
     header.ts     アバター + 名前 + フォロワー/リポジトリ数
+    activity.ts   最近の公開アクティビティ（octicon 付き）
     languages.ts  言語の積み上げバー + 凡例
 ```
+
+## セクションの順序
+
+セクションの並びは `METRICS_ORDER` 環境変数（プラグイン名のカンマ区切り）で
+決まります。コードを触らずに並び替え・省略ができます:
+
+```bash
+METRICS_ORDER=header,languages,activity npm start   # activity ⇄ languages を入替
+```
+
+デフォルトは `header,activity,languages`。自動実行ではワークフローの
+`Generate` ステップの `env:` で設定します。
 
 ## ローカル実行
 

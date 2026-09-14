@@ -1,19 +1,16 @@
-import { escapeXml } from "./svg";
-import type { LanguageStat } from "./plugins/languages";
-import type { Metric } from "./plugins/activity";
+import { escapeXml } from "../svg";
 
 const MONO =
   "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace";
 const FS = 13.5; // font size
 const CW = 8.13; // approx monospace char width at FS
 const LINE = 21; // line height
-const MARGIN = 34; // gradient padding around the window
+const MARGIN = 34; // transparent padding around the window
 const PADX = 18; // window inner horizontal padding
 const TITLE = 36; // title bar height
 const PAD_TOP = 12;
 const PAD_BOTTOM = 16;
-const BAR = 16; // language bar length (chars)
-const NAME_W = 12; // language name column width (chars)
+const MIN_W = 380; // minimum window width
 
 // Dracula-ish terminal palette.
 const C = {
@@ -25,46 +22,31 @@ const C = {
   dim: "#6272a4",
 };
 
-const prompt = (cmd: string) =>
+/** A shell prompt line: `➜  ~  <cmd>`. Shared by feature terminal blocks. */
+export const prompt = (cmd: string) =>
   `<tspan class="p">➜</tspan>  <tspan class="c">~</tspan>  ${escapeXml(cmd)}`;
 
-export type TerminalBlock =
-  | { kind: "activity"; data: Metric[] }
-  | { kind: "languages"; data: LanguageStat[] };
+/** Visible character count of a line (ignoring tspan/markup), for sizing. */
+const visibleLength = (line: string) => line.replace(/<[^>]+>/g, "").length;
 
-const activityLines = (activity: Metric[]): string[] => [
-  prompt("cat activity"),
-  ...activity.map((m) => `  <tspan class="n">${String(m.count).padStart(6)}</tspan>  ${escapeXml(m.label)}`),
-];
-
-const languageLines = (languages: LanguageStat[]): string[] => [
-  prompt("cat languages"),
-  ...languages.map((lang) => {
-    const name =
-      lang.name.length > NAME_W ? `${lang.name.slice(0, NAME_W - 1)}…` : lang.name.padEnd(NAME_W);
-    const filled = Math.min(BAR, Math.max(1, Math.round((lang.pct / 100) * BAR)));
-    const bar =
-      `<tspan fill="${lang.color}">${"█".repeat(filled)}</tspan>` +
-      `<tspan class="d">${"░".repeat(BAR - filled)}</tspan>`;
-    const pct = `${lang.pct.toFixed(1)}%`.padStart(6);
-    return `  ${escapeXml(name)} ${bar} <tspan class="n">${pct}</tspan>`;
-  }),
-];
-
-/** Renders the given blocks (in order) as a ray.so-style terminal window. */
-export function renderTerminal(opts: { user: string; blocks: TerminalBlock[] }): string {
+/**
+ * Renders content blocks (each an array of ready-made lines) as a ray.so-style
+ * terminal window. Blocks are separated by a blank line; a cursor prompt is
+ * appended. The window is feature-agnostic — features build their own lines.
+ */
+export function renderTerminal(opts: { user: string; blocks: string[][] }): string {
   const { user, blocks } = opts;
-  const lines: string[] = [];
 
+  const lines: string[] = [];
   blocks.forEach((block, i) => {
     if (i > 0) lines.push("");
-    lines.push(...(block.kind === "activity" ? activityLines(block.data) : languageLines(block.data)));
+    lines.push(...block);
   });
   lines.push("");
   lines.push(`${prompt("")}<tspan class="cur">▊</tspan>`);
 
-  const maxChars = 6 + NAME_W + BAR + 8;
-  const winW = Math.max(380, PADX * 2 + maxChars * CW);
+  const maxChars = lines.reduce((max, line) => Math.max(max, visibleLength(line)), 0);
+  const winW = Math.max(MIN_W, PADX * 2 + maxChars * CW);
   const winH = TITLE + PAD_TOP + lines.length * LINE + PAD_BOTTOM;
   const svgW = Math.round(winW + MARGIN * 2);
   const svgH = Math.round(winH + MARGIN * 2);

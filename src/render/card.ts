@@ -1,4 +1,4 @@
-import type { Section } from "./types";
+import type { Section } from "../types";
 
 export const WIDTH = 480;
 const PAD = 24;

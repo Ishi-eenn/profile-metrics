@@ -23,7 +23,7 @@ src/
     card.ts         各セクションを 1 枚の SVG カードに積み上げ
     terminal.ts     ray.so 風ターミナルウィンドウ（feature 非依存）
   features/         機能ごとに 1 フォルダで部品を co-locate:
-    header/         card.ts
+    header/         fetch.ts · icons.ts · card.ts · terminal.ts
     activity/       fetch.ts · icons.ts · card.ts · terminal.ts
     languages/      fetch.ts · card.ts · terminal.ts
 ```
@@ -56,17 +56,17 @@ Activity の各行も `METRICS_ACTIVITY`（`commits,reviews,prs,issues,comments`
 METRICS_ACTIVITY=commits,prs,comments npm start     # この3行だけ表示
 ```
 
-ターミナル画像は `METRICS_TERMINAL`（`activity,languages` の任意の部分集合・
-順序）で独立に制御できます:
+ターミナル画像は `METRICS_TERMINAL`（`profile,activity,languages` の任意の
+部分集合・順序）で独立に制御できます:
 
 ```bash
 METRICS_TERMINAL=languages npm start                # languages のみ
-METRICS_TERMINAL=languages,activity npm start       # 2 ブロックを入替
+METRICS_TERMINAL=profile,languages npm start        # activity ブロックを外す
 ```
 
 デフォルトは `METRICS_ORDER=header,activity,languages`、
 `METRICS_ACTIVITY=commits,reviews,prs,issues,comments`、
-`METRICS_TERMINAL=activity,languages`。自動実行ではワークフローの
+`METRICS_TERMINAL=profile,activity,languages`。自動実行ではワークフローの
 `Generate` ステップの `env:` で設定します。
 
 ## ローカル実行

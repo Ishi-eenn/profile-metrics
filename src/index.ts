@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import { makeGraphql, makeRest } from "./github";
 import { renderCard } from "./render/card";
 import { renderTerminal } from "./render/terminal";
-import { headerPlugin } from "./features/header";
+import { headerPlugin, profileLines, fetchProfile } from "./features/header";
 import { languagesPlugin, languageLines, fetchLanguages } from "./features/languages";
 import { activityPlugin, activityLines, fetchActivity } from "./features/activity";
 import type { Plugin, PluginContext, Section } from "./types";
@@ -65,14 +65,15 @@ console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
 // appear and in what order — e.g. "languages" for languages only, or
 // "languages,activity" to swap. Omit a name to hide that block.
 try {
-  const order = (process.env.METRICS_TERMINAL ?? "activity,languages")
+  const order = (process.env.METRICS_TERMINAL ?? "profile,activity,languages")
     .split(",")
     .map((name) => name.trim())
     .filter(Boolean);
 
   const blocks: string[][] = [];
   for (const name of order) {
-    if (name === "activity") blocks.push(activityLines(await fetchActivity(ctx)));
+    if (name === "profile") blocks.push(profileLines(await fetchProfile(ctx)));
+    else if (name === "activity") blocks.push(activityLines(await fetchActivity(ctx)));
     else if (name === "languages") blocks.push(languageLines(await fetchLanguages(ctx)));
     else console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
   }

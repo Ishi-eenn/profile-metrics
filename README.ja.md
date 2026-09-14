@@ -52,9 +52,18 @@ Activity の各行も `METRICS_ACTIVITY`（`commits,reviews,prs,issues,comments`
 METRICS_ACTIVITY=commits,prs,comments npm start     # この3行だけ表示
 ```
 
+ターミナル画像は `METRICS_TERMINAL`（`activity,languages` の任意の部分集合・
+順序）で独立に制御できます:
+
+```bash
+METRICS_TERMINAL=languages npm start                # languages のみ
+METRICS_TERMINAL=languages,activity npm start       # 2 ブロックを入替
+```
+
 デフォルトは `METRICS_ORDER=header,activity,languages`、
-`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`。自動実行では
-ワークフローの `Generate` ステップの `env:` で設定します。
+`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`、
+`METRICS_TERMINAL=activity,languages`。自動実行ではワークフローの
+`Generate` ステップの `env:` で設定します。
 
 ## ローカル実行
 

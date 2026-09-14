@@ -50,9 +50,18 @@ Activity rows are likewise controlled by `METRICS_ACTIVITY` (any subset/order of
 METRICS_ACTIVITY=commits,prs,comments npm start     # only these three rows
 ```
 
+The terminal image has its own block control via `METRICS_TERMINAL` (any
+subset/order of `activity,languages`):
+
+```bash
+METRICS_TERMINAL=languages npm start                # languages only
+METRICS_TERMINAL=languages,activity npm start       # swap the two blocks
+```
+
 Defaults: `METRICS_ORDER=header,activity,languages`,
-`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`. Set them in the
-workflow's `Generate` step `env:` for automated runs.
+`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`,
+`METRICS_TERMINAL=activity,languages`. Set them in the workflow's `Generate`
+step `env:` for automated runs.
 
 ## Run locally
 

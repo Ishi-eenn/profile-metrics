@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import { makeGraphql, makeRest } from "./github";
 import { renderCard } from "./render";
-import { renderTerminal } from "./terminal";
+import { renderTerminal, type TerminalBlock } from "./terminal";
 import { headerPlugin } from "./plugins/header";
 import { languagesPlugin, fetchLanguages } from "./plugins/languages";
 import { activityPlugin, fetchActivity } from "./plugins/activity";
@@ -61,10 +61,23 @@ const svg = renderCard(sections);
 await fs.writeFile(output, svg, "utf8");
 console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
 
-// Terminal-style image (ray.so-like) of languages + activity.
+// Terminal-style image (ray.so-like). METRICS_TERMINAL controls which blocks
+// appear and in what order — e.g. "languages" for languages only, or
+// "languages,activity" to swap. Omit a name to hide that block.
 try {
-  const [languages, activity] = await Promise.all([fetchLanguages(ctx), fetchActivity(ctx)]);
-  const terminal = renderTerminal({ user, languages, activity });
+  const order = (process.env.METRICS_TERMINAL ?? "activity,languages")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  const blocks: TerminalBlock[] = [];
+  for (const name of order) {
+    if (name === "activity") blocks.push({ kind: "activity", data: await fetchActivity(ctx) });
+    else if (name === "languages") blocks.push({ kind: "languages", data: await fetchLanguages(ctx) });
+    else console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
+  }
+
+  const terminal = renderTerminal({ user, blocks });
   await fs.writeFile(terminalOutput, terminal, "utf8");
   console.log(`Wrote ${terminalOutput} (${terminal.length} bytes)`);
 } catch (error) {

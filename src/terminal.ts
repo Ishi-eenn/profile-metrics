@@ -28,24 +28,18 @@ const C = {
 const prompt = (cmd: string) =>
   `<tspan class="p">➜</tspan>  <tspan class="c">~</tspan>  ${escapeXml(cmd)}`;
 
-/** Renders languages + activity as a ray.so-style terminal window. */
-export function renderTerminal(opts: {
-  user: string;
-  languages: LanguageStat[];
-  activity: Metric[];
-}): string {
-  const { user, languages, activity } = opts;
-  const lines: string[] = [];
+export type TerminalBlock =
+  | { kind: "activity"; data: Metric[] }
+  | { kind: "languages"; data: LanguageStat[] };
 
-  lines.push(prompt("gh activity"));
-  for (const m of activity) {
-    const n = String(m.count).padStart(6);
-    lines.push(`  <tspan class="n">${n}</tspan>  ${escapeXml(m.label)}`);
-  }
-  lines.push("");
+const activityLines = (activity: Metric[]): string[] => [
+  prompt("gh activity"),
+  ...activity.map((m) => `  <tspan class="n">${String(m.count).padStart(6)}</tspan>  ${escapeXml(m.label)}`),
+];
 
-  lines.push(prompt("gh languages"));
-  for (const lang of languages) {
+const languageLines = (languages: LanguageStat[]): string[] => [
+  prompt("gh languages"),
+  ...languages.map((lang) => {
     const name =
       lang.name.length > NAME_W ? `${lang.name.slice(0, NAME_W - 1)}…` : lang.name.padEnd(NAME_W);
     const filled = Math.min(BAR, Math.max(1, Math.round((lang.pct / 100) * BAR)));
@@ -53,8 +47,19 @@ export function renderTerminal(opts: {
       `<tspan fill="${lang.color}">${"█".repeat(filled)}</tspan>` +
       `<tspan class="d">${"░".repeat(BAR - filled)}</tspan>`;
     const pct = `${lang.pct.toFixed(1)}%`.padStart(6);
-    lines.push(`  ${escapeXml(name)} ${bar} <tspan class="n">${pct}</tspan>`);
-  }
+    return `  ${escapeXml(name)} ${bar} <tspan class="n">${pct}</tspan>`;
+  }),
+];
+
+/** Renders the given blocks (in order) as a ray.so-style terminal window. */
+export function renderTerminal(opts: { user: string; blocks: TerminalBlock[] }): string {
+  const { user, blocks } = opts;
+  const lines: string[] = [];
+
+  blocks.forEach((block, i) => {
+    if (i > 0) lines.push("");
+    lines.push(...(block.kind === "activity" ? activityLines(block.data) : languageLines(block.data)));
+  });
   lines.push("");
   lines.push(`${prompt("")}<tspan class="cur">▊</tspan>`);
 

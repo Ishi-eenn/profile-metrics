@@ -72,12 +72,6 @@ export function renderTerminal(opts: {
     .join("\n");
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" font-family="${MONO}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#9b5de5" />
-      <stop offset="1" stop-color="#f15bb5" />
-    </linearGradient>
-  </defs>
   <style>
     text { fill: ${C.fg}; font-size: ${FS}px; white-space: pre; }
     .p { fill: ${C.green}; }
@@ -87,7 +81,6 @@ export function renderTerminal(opts: {
     .cur { fill: ${C.fg}; }
     .title { fill: ${C.dim}; font-size: 12px; }
   </style>
-  <rect width="${svgW}" height="${svgH}" fill="url(#bg)" />
   <g transform="translate(${MARGIN}, ${MARGIN})">
     <rect x="3" y="6" width="${winW}" height="${winH}" rx="10" fill="#000000" opacity="0.22" />
     <rect width="${winW}" height="${winH}" rx="10" fill="${C.bg}" />

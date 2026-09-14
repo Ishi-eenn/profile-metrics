@@ -7,6 +7,7 @@ import { fetchProfile } from "./fetch";
 const SQ = 9; // grass square size
 const GAP = 2; // grass gap
 const PITCH = SQ + GAP;
+const RIGHT_W = 210; // right column width (fits "Contributed to N repositories")
 
 /** Avatar + name + joined / followers / contributed, with a last-week grass. */
 export const headerPlugin: Plugin = {
@@ -21,11 +22,11 @@ export const headerPlugin: Plugin = {
       `<g class="icon" transform="translate(${iconX}, ${y - 12})">${icon}</g>` +
       `<text x="${textX}" y="${y}" class="value">${escapeXml(text)}</text>`;
 
-    // Right column: grass on top, "Contributed to" below it.
-    const grassW = p.week.length * PITCH - GAP;
-    const gx = CONTENT_WIDTH - grassW;
+    // Right column: grass on top, "Contributed to" left-aligned beneath it —
+    // the text starts under the grass's leftmost block.
+    const rx = CONTENT_WIDTH - RIGHT_W;
     const grass = p.week
-      .map((d, i) => `<rect x="${gx + i * PITCH}" y="30" width="${SQ}" height="${SQ}" rx="2" fill="${d.color}" />`)
+      .map((d, i) => `<rect x="${rx + i * PITCH}" y="30" width="${SQ}" height="${SQ}" rx="2" fill="${d.color}" />`)
       .join("");
 
     return {
@@ -37,7 +38,7 @@ export const headerPlugin: Plugin = {
         ${row(CLOCK, 72, 94, 40, `Joined GitHub ${p.joined}`)}
         ${row(PEOPLE, 72, 94, 60, `Followed by ${p.followers} users`)}
         ${grass}
-        ${row(CONTRIB, 240, 262, 60, `Contributed to ${p.contributedRepos} repositories`)}`,
+        ${row(CONTRIB, rx, rx + 22, 60, `Contributed to ${p.contributedRepos} repositories`)}`,
     };
   },
 };

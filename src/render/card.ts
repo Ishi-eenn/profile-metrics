@@ -1,6 +1,6 @@
 import type { Section } from "../types";
 
-export const WIDTH = 480;
+export const WIDTH = 530;
 const PAD = 24;
 const GAP = 18;
 const TITLE_H = 24;

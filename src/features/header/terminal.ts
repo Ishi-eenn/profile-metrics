@@ -2,7 +2,7 @@ import { escapeXml } from "../../svg";
 import { prompt, CW, type Line } from "../../render/terminal";
 import type { Profile } from "./fetch";
 
-const SQ = 11; // grass square size
+const SQ = 13; // grass square size
 const GAP = 3;
 const INDENT = 2; // align with the "  " text indent
 

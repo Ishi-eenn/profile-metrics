@@ -1,10 +1,10 @@
 import { promises as fs } from "node:fs";
 import { makeGraphql, makeRest } from "./github";
-import { renderCard } from "./render";
-import { renderTerminal, type TerminalBlock } from "./terminal";
-import { headerPlugin } from "./plugins/header";
-import { languagesPlugin, fetchLanguages } from "./plugins/languages";
-import { activityPlugin, fetchActivity } from "./plugins/activity";
+import { renderCard } from "./render/card";
+import { renderTerminal } from "./render/terminal";
+import { headerPlugin } from "./features/header";
+import { languagesPlugin, languageLines, fetchLanguages } from "./features/languages";
+import { activityPlugin, activityLines, fetchActivity } from "./features/activity";
 import type { Plugin, PluginContext, Section } from "./types";
 
 const user = process.env.METRICS_USER ?? "Ishi-eenn";
@@ -24,15 +24,15 @@ const ctx: PluginContext = {
   rest: makeRest(token),
 };
 
-// Available plugins, keyed by name. Add one at a time.
+// Available card plugins, keyed by name. Add one at a time.
 const registry: Record<string, Plugin> = {
   header: headerPlugin,
   activity: activityPlugin,
   languages: languagesPlugin,
 };
 
-// Section order is configurable via METRICS_ORDER (comma-separated plugin
-// names) — e.g. swap "activity" and "languages" without touching code.
+// Card section order is configurable via METRICS_ORDER (comma-separated plugin
+// names) — reorder or drop sections (omit a name to hide it).
 const DEFAULT_ORDER = "header,activity,languages";
 const plugins: Plugin[] = (process.env.METRICS_ORDER ?? DEFAULT_ORDER)
   .split(",")
@@ -70,10 +70,10 @@ try {
     .map((name) => name.trim())
     .filter(Boolean);
 
-  const blocks: TerminalBlock[] = [];
+  const blocks: string[][] = [];
   for (const name of order) {
-    if (name === "activity") blocks.push({ kind: "activity", data: await fetchActivity(ctx) });
-    else if (name === "languages") blocks.push({ kind: "languages", data: await fetchLanguages(ctx) });
+    if (name === "activity") blocks.push(activityLines(await fetchActivity(ctx)));
+    else if (name === "languages") blocks.push(languageLines(await fetchLanguages(ctx)));
     else console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
   }
 

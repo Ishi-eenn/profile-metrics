@@ -13,17 +13,21 @@ it renders correctly inside a GitHub `<img>` tag.
 
 ```
 src/
-  types.ts        Plugin / Section contract
-  github.ts       GraphQL client (global fetch)
-  svg.ts          escaping + base64 image inlining
-  render.ts       stacks sections into one SVG card
-  terminal.ts     ray.so-style terminal window (languages + activity)
-  index.ts        runs plugins with per-plugin error isolation
-  plugins/
-    header.ts     avatar + name + follower/repo counts
-    activity.ts   contribution counts (commits, PRs, reviews, issues, comments)
-    languages.ts  stacked language bar + legend
+  index.ts          orchestration (fetch → render → write, error isolation)
+  types.ts          Plugin / Section / context contracts
+  github.ts         GraphQL + REST clients (global fetch)
+  svg.ts            escaping + base64 image inlining
+  render/
+    card.ts         stacks sections into one SVG card
+    terminal.ts     ray.so-style terminal window (feature-agnostic)
+  features/         one folder per feature, co-locating its pieces:
+    header/         card.ts
+    activity/       fetch.ts · icons.ts · card.ts · terminal.ts
+    languages/      fetch.ts · card.ts · terminal.ts
 ```
+
+Each feature folder exposes (via its `index.ts`): a card `Plugin` (`card.ts`), a
+data fetcher (`fetch.ts`), and optionally a terminal block (`terminal.ts`).
 
 Two images are produced: `metrics.svg` (the card) and `terminal.svg` (a
 ray.so-style terminal window rendering languages + activity). Both are published
@@ -93,7 +97,10 @@ only. To count private contributions too (and match a metrics-style total), add
 a Personal Access Token as a repository secret named `METRICS_TOKEN`; the
 workflow uses it automatically when present.
 
-## Add a plugin
+## Add a feature
 
-1. Create `src/plugins/<name>.ts` exporting a `Plugin`.
-2. Register it in the `plugins` array in `src/index.ts`.
+1. Create `src/features/<name>/` with `card.ts` (exporting a `Plugin`) and,
+   as needed, `fetch.ts` / `terminal.ts` / `icons.ts`, plus an `index.ts`
+   re-exporting them.
+2. Register the plugin in `registry` in `src/index.ts` (and, if it has a
+   terminal block, wire it into the `METRICS_TERMINAL` handling there).

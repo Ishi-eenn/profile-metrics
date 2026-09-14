@@ -1,5 +1,5 @@
-import type { Plugin } from "../types";
-import { escapeXml, fetchDataUri } from "../svg";
+import type { Plugin } from "../../types";
+import { escapeXml, fetchDataUri } from "../../svg";
 
 /** Avatar + name + follower/repo counts. */
 export const headerPlugin: Plugin = {

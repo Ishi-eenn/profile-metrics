@@ -15,17 +15,21 @@
 
 ```
 src/
-  types.ts        Plugin / Section の型（契約）
-  github.ts       GraphQL クライアント（グローバル fetch）
-  svg.ts          エスケープ + 画像の base64 インライン化
-  render.ts       各セクションを 1 枚の SVG カードに積み上げ
-  terminal.ts     ray.so 風ターミナルウィンドウ（languages + activity）
-  index.ts        プラグインをエラー隔離しつつ実行
-  plugins/
-    header.ts     アバター + 名前 + フォロワー/リポジトリ数
-    activity.ts   コントリビューション集計（commit / PR / レビュー / issue / コメント）
-    languages.ts  言語の積み上げバー + 凡例
+  index.ts          オーケストレーション（取得 → 描画 → 書き出し・エラー隔離）
+  types.ts          Plugin / Section / context の型（契約）
+  github.ts         GraphQL + REST クライアント（グローバル fetch）
+  svg.ts            エスケープ + 画像の base64 インライン化
+  render/
+    card.ts         各セクションを 1 枚の SVG カードに積み上げ
+    terminal.ts     ray.so 風ターミナルウィンドウ（feature 非依存）
+  features/         機能ごとに 1 フォルダで部品を co-locate:
+    header/         card.ts
+    activity/       fetch.ts · icons.ts · card.ts · terminal.ts
+    languages/      fetch.ts · card.ts · terminal.ts
 ```
+
+各 feature フォルダは `index.ts` から、カードの `Plugin`（`card.ts`）、データ
+取得（`fetch.ts`）、必要ならターミナルブロック（`terminal.ts`）を公開します。
 
 出力画像は 2 枚です: `metrics.svg`（カード）と `terminal.svg`（languages +
 activity を ray.so 風のターミナルウィンドウで描画）。どちらも出力ブランチに
@@ -95,7 +99,10 @@ GITHUB_TOKEN=$(gh auth token) METRICS_USER=<あなたのログイン名> npm sta
 リポジトリシークレットに Personal Access Token を登録してください。存在すれば
 ワークフローが自動的にそちらを使います。
 
-## プラグインを追加する
+## 機能を追加する
 
-1. `src/plugins/<name>.ts` を作成し、`Plugin` を export します。
-2. `src/index.ts` の `plugins` 配列に登録します。
+1. `src/features/<name>/` を作成し、`card.ts`（`Plugin` を export）と、必要に
+   応じて `fetch.ts` / `terminal.ts` / `icons.ts`、そしてそれらを re-export する
+   `index.ts` を置きます。
+2. `src/index.ts` の `registry` に登録します（ターミナルブロックがある場合は
+   `METRICS_TERMINAL` の処理にも組み込みます）。

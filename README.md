@@ -17,11 +17,20 @@ src/
   github.ts       GraphQL client (global fetch)
   svg.ts          escaping + base64 image inlining
   render.ts       stacks sections into one SVG card
+  terminal.ts     ray.so-style terminal window (languages + activity)
   index.ts        runs plugins with per-plugin error isolation
   plugins/
     header.ts     avatar + name + follower/repo counts
     activity.ts   contribution counts (commits, PRs, reviews, issues, comments)
     languages.ts  stacked language bar + legend
+```
+
+Two images are produced: `metrics.svg` (the card) and `terminal.svg` (a
+ray.so-style terminal window rendering languages + activity). Both are published
+to the output branch:
+
+```md
+<img src="https://raw.githubusercontent.com/Ishi-eenn/profile-metrics/metrics-output/terminal.svg" width="480" />
 ```
 
 ## Section order & visibility

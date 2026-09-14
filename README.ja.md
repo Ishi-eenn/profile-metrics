@@ -19,11 +19,20 @@ src/
   github.ts       GraphQL クライアント（グローバル fetch）
   svg.ts          エスケープ + 画像の base64 インライン化
   render.ts       各セクションを 1 枚の SVG カードに積み上げ
+  terminal.ts     ray.so 風ターミナルウィンドウ（languages + activity）
   index.ts        プラグインをエラー隔離しつつ実行
   plugins/
     header.ts     アバター + 名前 + フォロワー/リポジトリ数
     activity.ts   コントリビューション集計（commit / PR / レビュー / issue / コメント）
     languages.ts  言語の積み上げバー + 凡例
+```
+
+出力画像は 2 枚です: `metrics.svg`（カード）と `terminal.svg`（languages +
+activity を ray.so 風のターミナルウィンドウで描画）。どちらも出力ブランチに
+publish されます:
+
+```md
+<img src="https://raw.githubusercontent.com/Ishi-eenn/profile-metrics/metrics-output/terminal.svg" width="480" />
 ```
 
 ## セクションの順序・表示/非表示

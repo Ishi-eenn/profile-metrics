@@ -37,6 +37,7 @@ jobs:
         run: |
           mkdir -p public
           cp metrics.svg public/metrics.svg
+          cp terminal.svg public/terminal.svg
 
       # Publish the SVG to a branch so it can be viewed directly via a raw URL:
       #   main / scheduled -> metrics-output  (production; referenced by the profile)

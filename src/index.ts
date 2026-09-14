@@ -1,14 +1,16 @@
 import { promises as fs } from "node:fs";
 import { makeGraphql, makeRest } from "./github";
 import { renderCard } from "./render";
+import { renderTerminal } from "./terminal";
 import { headerPlugin } from "./plugins/header";
-import { languagesPlugin } from "./plugins/languages";
-import { activityPlugin } from "./plugins/activity";
+import { languagesPlugin, fetchLanguages } from "./plugins/languages";
+import { activityPlugin, fetchActivity } from "./plugins/activity";
 import type { Plugin, PluginContext, Section } from "./types";
 
 const user = process.env.METRICS_USER ?? "Ishi-eenn";
 const token = process.env.GITHUB_TOKEN ?? process.env.TOKEN ?? "";
 const output = process.env.METRICS_OUTPUT ?? "metrics.svg";
+const terminalOutput = process.env.METRICS_TERMINAL_OUTPUT ?? "terminal.svg";
 
 if (!token) {
   console.error("Missing token: set GITHUB_TOKEN (or TOKEN).");
@@ -58,6 +60,16 @@ for (const plugin of plugins) {
 const svg = renderCard(sections);
 await fs.writeFile(output, svg, "utf8");
 console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
+
+// Terminal-style image (ray.so-like) of languages + activity.
+try {
+  const [languages, activity] = await Promise.all([fetchLanguages(ctx), fetchActivity(ctx)]);
+  const terminal = renderTerminal({ user, languages, activity });
+  await fs.writeFile(terminalOutput, terminal, "utf8");
+  console.log(`Wrote ${terminalOutput} (${terminal.length} bytes)`);
+} catch (error) {
+  console.error("terminal > error:", error);
+}
 
 function errorSection(name: string): Section {
   return {

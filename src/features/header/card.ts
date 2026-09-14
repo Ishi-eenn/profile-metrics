@@ -4,8 +4,8 @@ import { CONTENT_WIDTH } from "../../render/card";
 import { CLOCK, PEOPLE, CONTRIB } from "./icons";
 import { fetchProfile } from "./fetch";
 
-const SQ = 9; // grass square size
-const GAP = 2; // grass gap
+const SQ = 11; // grass square size
+const GAP = 3; // grass gap
 const PITCH = SQ + GAP;
 const RIGHT_W = 210; // right column width (fits "Contributed to N repositories")
 

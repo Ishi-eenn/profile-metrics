@@ -3,7 +3,7 @@ import { escapeXml } from "../svg";
 const MONO =
   "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace";
 const FS = 13.5; // font size
-const CW = 8.13; // approx monospace char width at FS
+export const CW = 8.13; // approx monospace char width at FS
 const LINE = 21; // line height
 const MARGIN = 34; // transparent padding around the window
 const PADX = 18; // window inner horizontal padding
@@ -26,18 +26,26 @@ const C = {
 export const prompt = (cmd: string) =>
   `<tspan class="p">➜</tspan>  <tspan class="c">~</tspan>  ${escapeXml(cmd)}`;
 
-/** Visible character count of a line (ignoring tspan/markup), for sizing. */
-const visibleLength = (line: string) => line.replace(/<[^>]+>/g, "").length;
+/**
+ * A terminal line: either text (rendered in a monospace <text>) or a raw SVG
+ * line whose markup is produced from the line's origin (x) and baseline (y) —
+ * used for crisp, uniform shapes like the contribution grass.
+ */
+export type Line = string | { raw: (x: number, y: number) => string };
+
+/** Visible character count of a text line (ignoring markup), for sizing. */
+const visibleLength = (line: Line) =>
+  typeof line === "string" ? line.replace(/<[^>]+>/g, "").length : 0;
 
 /**
  * Renders content blocks (each an array of ready-made lines) as a ray.so-style
  * terminal window. Blocks are separated by a blank line; a cursor prompt is
  * appended. The window is feature-agnostic — features build their own lines.
  */
-export function renderTerminal(opts: { user: string; blocks: string[][] }): string {
+export function renderTerminal(opts: { user: string; blocks: Line[][] }): string {
   const { user, blocks } = opts;
 
-  const lines: string[] = [];
+  const lines: Line[] = [];
   blocks.forEach((block, i) => {
     if (i > 0) lines.push("");
     lines.push(...block);
@@ -52,9 +60,10 @@ export function renderTerminal(opts: { user: string; blocks: string[][] }): stri
   const svgH = Math.round(winH + MARGIN * 2);
 
   const body = lines
-    .map((html, i) => {
+    .map((line, i) => {
       const y = TITLE + PAD_TOP + i * LINE + 4;
-      return `<text x="${PADX}" y="${y}">${html || " "}</text>`;
+      if (typeof line === "string") return `<text x="${PADX}" y="${y}">${line || " "}</text>`;
+      return line.raw(PADX, y);
     })
     .join("\n");
 

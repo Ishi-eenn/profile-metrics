@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import { makeGraphql, makeRest } from "./github";
 import { renderCard } from "./render/card";
-import { renderTerminal } from "./render/terminal";
+import { renderTerminal, type Line } from "./render/terminal";
 import { headerPlugin, profileLines, fetchProfile } from "./features/header";
 import { languagesPlugin, languageLines, fetchLanguages } from "./features/languages";
 import { activityPlugin, activityLines, fetchActivity } from "./features/activity";
@@ -70,7 +70,7 @@ try {
     .map((name) => name.trim())
     .filter(Boolean);
 
-  const blocks: string[][] = [];
+  const blocks: Line[][] = [];
   for (const name of order) {
     if (name === "profile") blocks.push(profileLines(await fetchProfile(ctx)));
     else if (name === "activity") blocks.push(activityLines(await fetchActivity(ctx)));

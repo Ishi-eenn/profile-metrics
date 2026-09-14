@@ -5,6 +5,18 @@ export interface Day {
   count: number;
 }
 
+const WEEK_DAYS = 14; // days of grass to show
+
+// Green scale (GitHub light theme), level 0 (empty) → 4 (most).
+const GREENS = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"];
+
+/** Graduated green for a day's count, scaled to the window's max. */
+function greenFor(count: number, max: number): string {
+  if (count <= 0) return GREENS[0];
+  const level = Math.min(4, Math.max(1, Math.ceil((count / max) * 4)));
+  return GREENS[level];
+}
+
 export interface Profile {
   name: string;
   login: string;
@@ -29,7 +41,7 @@ function joinedAgo(createdAt: string): string {
 /** Fetches profile summary + the last week's contribution days. */
 export async function fetchProfile(ctx: PluginContext): Promise<Profile> {
   const to = new Date();
-  const from = new Date(to.getTime() - 7 * 86_400_000);
+  const from = new Date(to.getTime() - WEEK_DAYS * 86_400_000);
 
   const data = await ctx.graphql(
     `query($login: String!, $from: DateTime!, $to: DateTime!) {
@@ -54,12 +66,14 @@ export async function fetchProfile(ctx: PluginContext): Promise<Profile> {
   );
 
   const u = data.user;
-  const days: any[] = u.contributionsCollection.contributionCalendar.weeks.flatMap(
-    (w: any) => w.contributionDays,
-  );
-  const week: Day[] = days
-    .slice(-7)
-    .map((d) => ({ color: d.color, count: d.contributionCount }));
+  const days: any[] = u.contributionsCollection.contributionCalendar.weeks
+    .flatMap((w: any) => w.contributionDays)
+    .slice(-WEEK_DAYS);
+  const max = Math.max(1, ...days.map((d) => d.contributionCount));
+  const week: Day[] = days.map((d) => ({
+    color: greenFor(d.contributionCount, max),
+    count: d.contributionCount,
+  }));
 
   return {
     name: u.name ?? u.login,

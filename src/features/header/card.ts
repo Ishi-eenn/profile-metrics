@@ -4,8 +4,8 @@ import { CONTENT_WIDTH } from "../../render/card";
 import { CLOCK, PEOPLE, CONTRIB } from "./icons";
 import { fetchProfile } from "./fetch";
 
-const SQ = 12; // grass square size
-const GAP = 3; // grass gap
+const SQ = 9; // grass square size
+const GAP = 2; // grass gap
 const PITCH = SQ + GAP;
 
 /** Avatar + name + joined / followers / contributed, with a last-week grass. */

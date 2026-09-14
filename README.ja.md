@@ -19,11 +19,20 @@ src/
   github.ts       GraphQL クライアント（グローバル fetch）
   svg.ts          エスケープ + 画像の base64 インライン化
   render.ts       各セクションを 1 枚の SVG カードに積み上げ
+  terminal.ts     ray.so 風ターミナルウィンドウ（languages + activity）
   index.ts        プラグインをエラー隔離しつつ実行
   plugins/
     header.ts     アバター + 名前 + フォロワー/リポジトリ数
     activity.ts   コントリビューション集計（commit / PR / レビュー / issue / コメント）
     languages.ts  言語の積み上げバー + 凡例
+```
+
+出力画像は 2 枚です: `metrics.svg`（カード）と `terminal.svg`（languages +
+activity を ray.so 風のターミナルウィンドウで描画）。どちらも出力ブランチに
+publish されます:
+
+```md
+<img src="https://raw.githubusercontent.com/Ishi-eenn/profile-metrics/metrics-output/terminal.svg" width="480" />
 ```
 
 ## セクションの順序・表示/非表示
@@ -43,9 +52,18 @@ Activity の各行も `METRICS_ACTIVITY`（`commits,reviews,prs,issues,comments`
 METRICS_ACTIVITY=commits,prs,comments npm start     # この3行だけ表示
 ```
 
+ターミナル画像は `METRICS_TERMINAL`（`activity,languages` の任意の部分集合・
+順序）で独立に制御できます:
+
+```bash
+METRICS_TERMINAL=languages npm start                # languages のみ
+METRICS_TERMINAL=languages,activity npm start       # 2 ブロックを入替
+```
+
 デフォルトは `METRICS_ORDER=header,activity,languages`、
-`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`。自動実行では
-ワークフローの `Generate` ステップの `env:` で設定します。
+`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`、
+`METRICS_TERMINAL=activity,languages`。自動実行ではワークフローの
+`Generate` ステップの `env:` で設定します。
 
 ## ローカル実行
 

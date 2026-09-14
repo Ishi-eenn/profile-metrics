@@ -32,11 +32,14 @@ jobs:
           METRICS_ORDER: header,activity,languages
           # Activity rows — reorder / drop individual rows.
           METRICS_ACTIVITY: commits,reviews,prs,issues,comments
+          # Terminal blocks — reorder / drop (e.g. "languages" for languages only).
+          METRICS_TERMINAL: activity,languages
 
       - name: Stage output
         run: |
           mkdir -p public
           cp metrics.svg public/metrics.svg
+          cp terminal.svg public/terminal.svg
 
       # Publish the SVG to a branch so it can be viewed directly via a raw URL:
       #   main / scheduled -> metrics-output  (production; referenced by the profile)

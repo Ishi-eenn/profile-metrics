@@ -17,11 +17,20 @@ src/
   github.ts       GraphQL client (global fetch)
   svg.ts          escaping + base64 image inlining
   render.ts       stacks sections into one SVG card
+  terminal.ts     ray.so-style terminal window (languages + activity)
   index.ts        runs plugins with per-plugin error isolation
   plugins/
     header.ts     avatar + name + follower/repo counts
     activity.ts   contribution counts (commits, PRs, reviews, issues, comments)
     languages.ts  stacked language bar + legend
+```
+
+Two images are produced: `metrics.svg` (the card) and `terminal.svg` (a
+ray.so-style terminal window rendering languages + activity). Both are published
+to the output branch:
+
+```md
+<img src="https://raw.githubusercontent.com/Ishi-eenn/profile-metrics/metrics-output/terminal.svg" width="480" />
 ```
 
 ## Section order & visibility
@@ -41,9 +50,18 @@ Activity rows are likewise controlled by `METRICS_ACTIVITY` (any subset/order of
 METRICS_ACTIVITY=commits,prs,comments npm start     # only these three rows
 ```
 
+The terminal image has its own block control via `METRICS_TERMINAL` (any
+subset/order of `activity,languages`):
+
+```bash
+METRICS_TERMINAL=languages npm start                # languages only
+METRICS_TERMINAL=languages,activity npm start       # swap the two blocks
+```
+
 Defaults: `METRICS_ORDER=header,activity,languages`,
-`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`. Set them in the
-workflow's `Generate` step `env:` for automated runs.
+`METRICS_ACTIVITY=commits,reviews,prs,issues,comments`,
+`METRICS_TERMINAL=activity,languages`. Set them in the workflow's `Generate`
+step `env:` for automated runs.
 
 ## Run locally
 

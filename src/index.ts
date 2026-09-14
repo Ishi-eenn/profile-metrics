@@ -1,14 +1,16 @@
 import { promises as fs } from "node:fs";
 import { makeGraphql, makeRest } from "./github";
 import { renderCard } from "./render";
+import { renderTerminal, type TerminalBlock } from "./terminal";
 import { headerPlugin } from "./plugins/header";
-import { languagesPlugin } from "./plugins/languages";
-import { activityPlugin } from "./plugins/activity";
+import { languagesPlugin, fetchLanguages } from "./plugins/languages";
+import { activityPlugin, fetchActivity } from "./plugins/activity";
 import type { Plugin, PluginContext, Section } from "./types";
 
 const user = process.env.METRICS_USER ?? "Ishi-eenn";
 const token = process.env.GITHUB_TOKEN ?? process.env.TOKEN ?? "";
 const output = process.env.METRICS_OUTPUT ?? "metrics.svg";
+const terminalOutput = process.env.METRICS_TERMINAL_OUTPUT ?? "terminal.svg";
 
 if (!token) {
   console.error("Missing token: set GITHUB_TOKEN (or TOKEN).");
@@ -58,6 +60,29 @@ for (const plugin of plugins) {
 const svg = renderCard(sections);
 await fs.writeFile(output, svg, "utf8");
 console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
+
+// Terminal-style image (ray.so-like). METRICS_TERMINAL controls which blocks
+// appear and in what order — e.g. "languages" for languages only, or
+// "languages,activity" to swap. Omit a name to hide that block.
+try {
+  const order = (process.env.METRICS_TERMINAL ?? "activity,languages")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  const blocks: TerminalBlock[] = [];
+  for (const name of order) {
+    if (name === "activity") blocks.push({ kind: "activity", data: await fetchActivity(ctx) });
+    else if (name === "languages") blocks.push({ kind: "languages", data: await fetchLanguages(ctx) });
+    else console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
+  }
+
+  const terminal = renderTerminal({ user, blocks });
+  await fs.writeFile(terminalOutput, terminal, "utf8");
+  console.log(`Wrote ${terminalOutput} (${terminal.length} bytes)`);
+} catch (error) {
+  console.error("terminal > error:", error);
+}
 
 function errorSection(name: string): Section {
   return {

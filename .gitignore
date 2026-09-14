@@ -3,4 +3,5 @@ node_modules/
 
 # Generated output (published to the metrics-output branch, not tracked on main)
 metrics.svg
+terminal.svg
 public/

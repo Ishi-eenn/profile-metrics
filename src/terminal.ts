@@ -33,12 +33,12 @@ export type TerminalBlock =
   | { kind: "languages"; data: LanguageStat[] };
 
 const activityLines = (activity: Metric[]): string[] => [
-  prompt("gh activity"),
+  prompt("cat activity"),
   ...activity.map((m) => `  <tspan class="n">${String(m.count).padStart(6)}</tspan>  ${escapeXml(m.label)}`),
 ];
 
 const languageLines = (languages: LanguageStat[]): string[] => [
-  prompt("gh languages"),
+  prompt("cat languages"),
   ...languages.map((lang) => {
     const name =
       lang.name.length > NAME_W ? `${lang.name.slice(0, NAME_W - 1)}…` : lang.name.padEnd(NAME_W);

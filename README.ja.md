@@ -64,7 +64,7 @@ METRICS_TERMINAL=languages npm start                # languages のみ
 METRICS_TERMINAL=profile,languages npm start        # activity ブロックを外す
 ```
 
-デフォルトは `METRICS_ORDER=header,activity,languages`、
+デフォルトは `METRICS_ORDER=header,activity,repositories,languages`、
 `METRICS_ACTIVITY=commits,reviews,prs,issues,comments`、
 `METRICS_TERMINAL=profile,activity,languages`。自動実行ではワークフローの
 `Generate` ステップの `env:` で設定します。

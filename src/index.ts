@@ -5,6 +5,7 @@ import { renderTerminal, type Line } from "./render/terminal";
 import { headerPlugin, profileLines, fetchProfile } from "./features/header";
 import { languagesPlugin, languageLines, fetchLanguages } from "./features/languages";
 import { activityPlugin, activityLines, fetchActivity } from "./features/activity";
+import { repositoriesPlugin } from "./features/repositories";
 import type { Plugin, PluginContext, Section } from "./types";
 
 const user = process.env.METRICS_USER ?? "Ishi-eenn";
@@ -28,12 +29,13 @@ const ctx: PluginContext = {
 const registry: Record<string, Plugin> = {
   header: headerPlugin,
   activity: activityPlugin,
+  repositories: repositoriesPlugin,
   languages: languagesPlugin,
 };
 
 // Card section order is configurable via METRICS_ORDER (comma-separated plugin
 // names) — reorder or drop sections (omit a name to hide it).
-const DEFAULT_ORDER = "header,activity,languages";
+const DEFAULT_ORDER = "header,activity,repositories,languages";
 const plugins: Plugin[] = (process.env.METRICS_ORDER ?? DEFAULT_ORDER)
   .split(",")
   .map((name) => name.trim())

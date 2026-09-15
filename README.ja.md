@@ -25,6 +25,7 @@ src/
   features/         機能ごとに 1 フォルダで部品を co-locate:
     header/         fetch.ts · icons.ts · card.ts · terminal.ts
     activity/       fetch.ts · icons.ts · card.ts · terminal.ts
+    repositories/   fetch.ts · icons.ts · card.ts · terminal.ts
     languages/      fetch.ts · card.ts · terminal.ts
 ```
 
@@ -56,7 +57,7 @@ Activity の各行も `METRICS_ACTIVITY`（`commits,reviews,prs,issues,comments`
 METRICS_ACTIVITY=commits,prs,comments npm start     # この3行だけ表示
 ```
 
-ターミナル画像は `METRICS_TERMINAL`（`profile,activity,languages` の任意の
+ターミナル画像は `METRICS_TERMINAL`（`profile,activity,repositories,languages` の任意の
 部分集合・順序）で独立に制御できます:
 
 ```bash
@@ -66,7 +67,7 @@ METRICS_TERMINAL=profile,languages npm start        # activity ブロックを�
 
 デフォルトは `METRICS_ORDER=header,activity,repositories,languages`、
 `METRICS_ACTIVITY=commits,reviews,prs,issues,comments`、
-`METRICS_TERMINAL=profile,activity,languages`。自動実行ではワークフローの
+`METRICS_TERMINAL=profile,activity,repositories,languages`。自動実行ではワークフローの
 `Generate` ステップの `env:` で設定します。
 
 ## ローカル実行

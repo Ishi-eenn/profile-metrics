@@ -23,7 +23,7 @@ src/
   features/         one folder per feature, co-locating its pieces:
     header/         fetch.ts · icons.ts · card.ts · terminal.ts
     activity/       fetch.ts · icons.ts · card.ts · terminal.ts
-    repositories/   fetch.ts · icons.ts · card.ts
+    repositories/   fetch.ts · icons.ts · card.ts · terminal.ts
     languages/      fetch.ts · card.ts · terminal.ts
 ```
 
@@ -56,7 +56,7 @@ METRICS_ACTIVITY=commits,prs,comments npm start     # only these three rows
 ```
 
 The terminal image has its own block control via `METRICS_TERMINAL` (any
-subset/order of `profile,activity,languages`):
+subset/order of `profile,activity,repositories,languages`):
 
 ```bash
 METRICS_TERMINAL=languages npm start                # languages only
@@ -65,7 +65,7 @@ METRICS_TERMINAL=profile,languages npm start        # drop the activity block
 
 Defaults: `METRICS_ORDER=header,activity,repositories,languages`,
 `METRICS_ACTIVITY=commits,reviews,prs,issues,comments`,
-`METRICS_TERMINAL=profile,activity,languages`. Set them in the workflow's
+`METRICS_TERMINAL=profile,activity,repositories,languages`. Set them in the workflow's
 `Generate` step `env:` for automated runs.
 
 ## Run locally

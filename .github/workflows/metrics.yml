@@ -33,7 +33,7 @@ jobs:
           # Activity rows — reorder / drop individual rows.
           METRICS_ACTIVITY: commits,reviews,prs,issues,comments
           # Terminal blocks — reorder / drop (e.g. "languages" for languages only).
-          METRICS_TERMINAL: profile,activity,languages
+          METRICS_TERMINAL: profile,activity,repositories,languages
 
       - name: Stage output
         run: |

@@ -5,7 +5,7 @@ import { renderTerminal, type Line } from "./render/terminal";
 import { headerPlugin, profileLines, fetchProfile } from "./features/header";
 import { languagesPlugin, languageLines, fetchLanguages } from "./features/languages";
 import { activityPlugin, activityLines, fetchActivity } from "./features/activity";
-import { repositoriesPlugin } from "./features/repositories";
+import { repositoriesPlugin, repositoryLines, fetchRepositories } from "./features/repositories";
 import type { Plugin, PluginContext, Section } from "./types";
 
 const user = process.env.METRICS_USER ?? "Ishi-eenn";
@@ -67,7 +67,7 @@ console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
 // appear and in what order — e.g. "languages" for languages only, or
 // "languages,activity" to swap. Omit a name to hide that block.
 try {
-  const order = (process.env.METRICS_TERMINAL ?? "profile,activity,languages")
+  const order = (process.env.METRICS_TERMINAL ?? "profile,activity,repositories,languages")
     .split(",")
     .map((name) => name.trim())
     .filter(Boolean);
@@ -76,6 +76,7 @@ try {
   for (const name of order) {
     if (name === "profile") blocks.push(profileLines(await fetchProfile(ctx)));
     else if (name === "activity") blocks.push(activityLines(await fetchActivity(ctx)));
+    else if (name === "repositories") blocks.push(repositoryLines(await fetchRepositories(ctx)));
     else if (name === "languages") blocks.push(languageLines(await fetchLanguages(ctx)));
     else console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
   }

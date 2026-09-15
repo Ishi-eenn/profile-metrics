@@ -28,12 +28,12 @@ jobs:
           # token (public data only) when the secret is not set.
           GITHUB_TOKEN: ${{ secrets.METRICS_TOKEN || secrets.GITHUB_TOKEN }}
           METRICS_USER: Ishi-eenn
-          # Section order — reorder / drop whole sections (omit a name to hide it).
-          METRICS_ORDER: header,activity,repositories,languages
+          # Card layout — "," orders sections, "|" splits into side-by-side columns.
+          METRICS_ORDER: header,activity | repositories,languages
           # Activity rows — reorder / drop individual rows.
           METRICS_ACTIVITY: commits,reviews,prs,issues,comments
-          # Terminal blocks — reorder / drop (e.g. "languages" for languages only).
-          METRICS_TERMINAL: profile,activity,repositories,languages
+          # Terminal blocks — "|" splits side-by-side panes, "," orders a pane.
+          METRICS_TERMINAL: profile,activity | repositories,languages
 
       - name: Stage output
         run: |

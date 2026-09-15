@@ -33,33 +33,37 @@ const registry: Record<string, Plugin> = {
   languages: languagesPlugin,
 };
 
-// Card section order is configurable via METRICS_ORDER (comma-separated plugin
-// names) — reorder or drop sections (omit a name to hide it).
-const DEFAULT_ORDER = "header,activity,repositories,languages";
-const plugins: Plugin[] = (process.env.METRICS_ORDER ?? DEFAULT_ORDER)
-  .split(",")
-  .map((name) => name.trim())
-  .filter(Boolean)
-  .map((name) => {
-    if (!registry[name]) console.warn(`unknown plugin in METRICS_ORDER: ${name}`);
-    return registry[name];
-  })
-  .filter((plugin): plugin is Plugin => Boolean(plugin));
+// Card layout via METRICS_ORDER: "," orders sections, "|" splits the card into
+// side-by-side columns.
+const DEFAULT_ORDER = "header,activity | repositories,languages";
+const columnSpecs = (process.env.METRICS_ORDER ?? DEFAULT_ORDER)
+  .split("|")
+  .map((col) => col.split(",").map((name) => name.trim()).filter(Boolean))
+  .filter((col) => col.length);
 
-const sections: Section[] = [];
-for (const plugin of plugins) {
-  try {
-    console.log(`plugin ${plugin.name} > started`);
-    sections.push(await plugin.run(ctx));
-    console.log(`plugin ${plugin.name} > done`);
-  } catch (error) {
-    // Error isolation: one broken plugin never breaks the whole card.
-    console.error(`plugin ${plugin.name} > error:`, error);
-    sections.push(errorSection(plugin.name));
+const columns: Section[][] = [];
+for (const spec of columnSpecs) {
+  const sections: Section[] = [];
+  for (const name of spec) {
+    const plugin = registry[name];
+    if (!plugin) {
+      console.warn(`unknown plugin in METRICS_ORDER: ${name}`);
+      continue;
+    }
+    try {
+      console.log(`plugin ${plugin.name} > started`);
+      sections.push(await plugin.run(ctx));
+      console.log(`plugin ${plugin.name} > done`);
+    } catch (error) {
+      // Error isolation: one broken plugin never breaks the whole card.
+      console.error(`plugin ${plugin.name} > error:`, error);
+      sections.push(errorSection(plugin.name));
+    }
   }
+  columns.push(sections);
 }
 
-const svg = renderCard(sections);
+const svg = renderCard(columns);
 await fs.writeFile(output, svg, "utf8");
 console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
 
@@ -67,21 +71,34 @@ console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
 // appear and in what order — e.g. "languages" for languages only, or
 // "languages,activity" to swap. Omit a name to hide that block.
 try {
-  const order = (process.env.METRICS_TERMINAL ?? "profile,activity,repositories,languages")
-    .split(",")
-    .map((name) => name.trim())
-    .filter(Boolean);
+  const blockLines = async (name: string): Promise<Line[] | null> => {
+    if (name === "profile") return profileLines(await fetchProfile(ctx));
+    if (name === "activity") return activityLines(await fetchActivity(ctx));
+    if (name === "repositories") return repositoryLines(await fetchRepositories(ctx));
+    if (name === "languages") return languageLines(await fetchLanguages(ctx));
+    console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
+    return null;
+  };
 
-  const blocks: Line[][] = [];
-  for (const name of order) {
-    if (name === "profile") blocks.push(profileLines(await fetchProfile(ctx)));
-    else if (name === "activity") blocks.push(activityLines(await fetchActivity(ctx)));
-    else if (name === "repositories") blocks.push(repositoryLines(await fetchRepositories(ctx)));
-    else if (name === "languages") blocks.push(languageLines(await fetchLanguages(ctx)));
-    else console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
+  // METRICS_TERMINAL: "|" splits side-by-side panes; "," orders blocks in a pane.
+  const paneSpecs = (process.env.METRICS_TERMINAL ?? "profile,activity | repositories,languages")
+    .split("|")
+    .map((pane) => pane.split(",").map((n) => n.trim()).filter(Boolean))
+    .filter((pane) => pane.length);
+
+  const panes: Line[][] = [];
+  for (const spec of paneSpecs) {
+    const lines: Line[] = [];
+    for (const name of spec) {
+      const block = await blockLines(name);
+      if (!block) continue;
+      if (lines.length) lines.push("");
+      lines.push(...block);
+    }
+    if (lines.length) panes.push(lines);
   }
 
-  const terminal = renderTerminal({ user, blocks });
+  const terminal = renderTerminal({ user, panes });
   await fs.writeFile(terminalOutput, terminal, "utf8");
   console.log(`Wrote ${terminalOutput} (${terminal.length} bytes)`);
 } catch (error) {

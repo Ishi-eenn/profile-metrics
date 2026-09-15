@@ -67,21 +67,34 @@ console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
 // appear and in what order — e.g. "languages" for languages only, or
 // "languages,activity" to swap. Omit a name to hide that block.
 try {
-  const order = (process.env.METRICS_TERMINAL ?? "profile,activity,repositories,languages")
-    .split(",")
-    .map((name) => name.trim())
-    .filter(Boolean);
+  const blockLines = async (name: string): Promise<Line[] | null> => {
+    if (name === "profile") return profileLines(await fetchProfile(ctx));
+    if (name === "activity") return activityLines(await fetchActivity(ctx));
+    if (name === "repositories") return repositoryLines(await fetchRepositories(ctx));
+    if (name === "languages") return languageLines(await fetchLanguages(ctx));
+    console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
+    return null;
+  };
 
-  const blocks: Line[][] = [];
-  for (const name of order) {
-    if (name === "profile") blocks.push(profileLines(await fetchProfile(ctx)));
-    else if (name === "activity") blocks.push(activityLines(await fetchActivity(ctx)));
-    else if (name === "repositories") blocks.push(repositoryLines(await fetchRepositories(ctx)));
-    else if (name === "languages") blocks.push(languageLines(await fetchLanguages(ctx)));
-    else console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
+  // METRICS_TERMINAL: "|" splits side-by-side panes; "," orders blocks in a pane.
+  const paneSpecs = (process.env.METRICS_TERMINAL ?? "profile,activity | repositories,languages")
+    .split("|")
+    .map((pane) => pane.split(",").map((n) => n.trim()).filter(Boolean))
+    .filter((pane) => pane.length);
+
+  const panes: Line[][] = [];
+  for (const spec of paneSpecs) {
+    const lines: Line[] = [];
+    for (const name of spec) {
+      const block = await blockLines(name);
+      if (!block) continue;
+      if (lines.length) lines.push("");
+      lines.push(...block);
+    }
+    if (lines.length) panes.push(lines);
   }
 
-  const terminal = renderTerminal({ user, blocks });
+  const terminal = renderTerminal({ user, panes });
   await fs.writeFile(terminalOutput, terminal, "utf8");
   console.log(`Wrote ${terminalOutput} (${terminal.length} bytes)`);
 } catch (error) {

@@ -11,6 +11,7 @@ const TITLE = 36; // title bar height
 const PAD_TOP = 12;
 const PAD_BOTTOM = 16;
 const MIN_W = 380; // minimum window width
+const PANE_GAP = 28; // horizontal gap between split panes
 
 // Dracula-ish terminal palette.
 const C = {
@@ -20,6 +21,7 @@ const C = {
   cyan: "#8be9fd",
   orange: "#ffb86c",
   dim: "#6272a4",
+  divider: "#44475a",
 };
 
 /** A shell prompt line: `➜  ~  <cmd>`. Shared by feature terminal blocks. */
@@ -38,34 +40,51 @@ const visibleLength = (line: Line) =>
   typeof line === "string" ? line.replace(/<[^>]+>/g, "").length : 0;
 
 /**
- * Renders content blocks (each an array of ready-made lines) as a ray.so-style
- * terminal window. Blocks are separated by a blank line; a cursor prompt is
- * appended. The window is feature-agnostic — features build their own lines.
+ * Renders the given panes side by side as a split ray.so-style terminal window.
+ * Each pane is a vertical stack of lines; a trailing prompt/cursor is appended
+ * per pane, and a divider is drawn between panes. A single pane behaves like a
+ * normal (unsplit) terminal.
  */
-export function renderTerminal(opts: { user: string; blocks: Line[][] }): string {
-  const { user, blocks } = opts;
+export function renderTerminal(opts: { user: string; panes: Line[][] }): string {
+  const { user } = opts;
+  const cursor = `${prompt("")}<tspan class="cur">▊</tspan>`;
+  const panes = opts.panes.map((pane) => [...pane, "", cursor]);
 
-  const lines: Line[] = [];
-  blocks.forEach((block, i) => {
-    if (i > 0) lines.push("");
-    lines.push(...block);
+  const paneChars = panes.map((pane) => pane.reduce((max, l) => Math.max(max, visibleLength(l)), 1));
+  const maxLines = panes.reduce((max, pane) => Math.max(max, pane.length), 1);
+
+  // Horizontal offset of each pane's left edge.
+  const paneX: number[] = [];
+  let x = PADX;
+  panes.forEach((_, i) => {
+    paneX.push(x);
+    x += paneChars[i] * CW + (i < panes.length - 1 ? PANE_GAP : 0);
   });
-  lines.push("");
-  lines.push(`${prompt("")}<tspan class="cur">▊</tspan>`);
 
-  const maxChars = lines.reduce((max, line) => Math.max(max, visibleLength(line)), 0);
-  const winW = Math.max(MIN_W, PADX * 2 + maxChars * CW);
-  const winH = TITLE + PAD_TOP + lines.length * LINE + PAD_BOTTOM;
+  const winW = Math.max(MIN_W, x + PADX);
+  const winH = TITLE + PAD_TOP + maxLines * LINE + PAD_BOTTOM;
   const svgW = Math.round(winW + MARGIN * 2);
   const svgH = Math.round(winH + MARGIN * 2);
 
-  const body = lines
-    .map((line, i) => {
-      const y = TITLE + PAD_TOP + i * LINE + 4;
-      if (typeof line === "string") return `<text x="${PADX}" y="${y}">${line || " "}</text>`;
-      return line.raw(PADX, y);
-    })
+  const body = panes
+    .map((pane, pi) =>
+      pane
+        .map((line, li) => {
+          const y = TITLE + PAD_TOP + li * LINE + 4;
+          if (typeof line === "string") return `<text x="${paneX[pi]}" y="${y}">${line || " "}</text>`;
+          return line.raw(paneX[pi], y);
+        })
+        .join("\n"),
+    )
     .join("\n");
+
+  const dividers = panes
+    .slice(0, -1)
+    .map((_, i) => {
+      const dx = (paneX[i] + paneChars[i] * CW + paneX[i + 1]) / 2;
+      return `<line x1="${dx.toFixed(1)}" y1="${TITLE}" x2="${dx.toFixed(1)}" y2="${winH}" stroke="${C.divider}" stroke-width="1" />`;
+    })
+    .join("");
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" font-family="${MONO}">
   <style>
@@ -84,6 +103,7 @@ export function renderTerminal(opts: { user: string; blocks: Line[][] }): string
     <circle cx="40" cy="${TITLE / 2}" r="6" fill="#ffbd2e" />
     <circle cx="60" cy="${TITLE / 2}" r="6" fill="#27c93f" />
     <text x="${winW / 2}" y="${TITLE / 2 + 4}" text-anchor="middle" class="title">${escapeXml(user)} — zsh</text>
+    ${dividers}
     <g xml:space="preserve">
 ${body}
     </g>

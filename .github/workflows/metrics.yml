@@ -32,8 +32,8 @@ jobs:
           METRICS_ORDER: header,activity,repositories,languages
           # Activity rows — reorder / drop individual rows.
           METRICS_ACTIVITY: commits,reviews,prs,issues,comments
-          # Terminal blocks — reorder / drop (e.g. "languages" for languages only).
-          METRICS_TERMINAL: profile,activity,repositories,languages
+          # Terminal blocks — "|" splits side-by-side panes, "," orders a pane.
+          METRICS_TERMINAL: profile,activity | repositories,languages
 
       - name: Stage output
         run: |

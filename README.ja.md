@@ -57,17 +57,19 @@ Activity の各行も `METRICS_ACTIVITY`（`commits,reviews,prs,issues,comments`
 METRICS_ACTIVITY=commits,prs,comments npm start     # この3行だけ表示
 ```
 
-ターミナル画像は `METRICS_TERMINAL`（`profile,activity,repositories,languages` の任意の
-部分集合・順序）で独立に制御できます:
+ターミナル画像は `METRICS_TERMINAL` で制御します。`,` はブロックの順序
+（`profile,activity,repositories,languages`）、`|` はウィンドウを横並びの
+ペインに分割（tmux 風）します:
 
 ```bash
-METRICS_TERMINAL=languages npm start                # languages のみ
-METRICS_TERMINAL=profile,languages npm start        # activity ブロックを外す
+METRICS_TERMINAL=languages npm start                                    # languages のみ
+METRICS_TERMINAL="profile,activity | repositories,languages" npm start  # 2 ペイン
+METRICS_TERMINAL="languages | profile" npm start                        # 左右の順序
 ```
 
 デフォルトは `METRICS_ORDER=header,activity,repositories,languages`、
 `METRICS_ACTIVITY=commits,reviews,prs,issues,comments`、
-`METRICS_TERMINAL=profile,activity,repositories,languages`。自動実行ではワークフローの
+`METRICS_TERMINAL=profile,activity | repositories,languages`。自動実行ではワークフローの
 `Generate` ステップの `env:` で設定します。
 
 ## ローカル実行

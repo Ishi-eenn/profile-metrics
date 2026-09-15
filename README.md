@@ -38,14 +38,15 @@ to the output branch:
 <img src="https://raw.githubusercontent.com/Ishi-eenn/profile-metrics/metrics-output/terminal.svg" width="480" />
 ```
 
-## Section order & visibility
+## Card layout
 
-Sections are ordered by `METRICS_ORDER` (comma-separated plugin names). Reorder
-or **hide** a section by omitting its name — no code changes needed:
+The card is laid out by `METRICS_ORDER`: `,` orders sections (omit a name to
+**hide** it), and `|` splits the card into side-by-side columns:
 
 ```bash
-METRICS_ORDER=header,languages,activity npm start   # swap activity ⇄ languages
-METRICS_ORDER=header,activity npm start             # hide languages entirely
+METRICS_ORDER="header,activity,repositories,languages" npm start  # single column
+METRICS_ORDER="header,activity | repositories,languages" npm start  # two columns
+METRICS_ORDER=header,activity npm start                           # hide the rest
 ```
 
 Activity rows are likewise controlled by `METRICS_ACTIVITY` (any subset/order of
@@ -65,7 +66,7 @@ METRICS_TERMINAL="profile,activity | repositories,languages" npm start  # two pa
 METRICS_TERMINAL="languages | profile" npm start                        # right/left order
 ```
 
-Defaults: `METRICS_ORDER=header,activity,repositories,languages`,
+Defaults: `METRICS_ORDER=header,activity | repositories,languages`,
 `METRICS_ACTIVITY=commits,reviews,prs,issues,comments`,
 `METRICS_TERMINAL=profile,activity | repositories,languages`. Set them in the
 workflow's `Generate` step `env:` for automated runs.

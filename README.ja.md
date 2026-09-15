@@ -40,14 +40,15 @@ publish されます:
 <img src="https://raw.githubusercontent.com/Ishi-eenn/profile-metrics/metrics-output/terminal.svg" width="480" />
 ```
 
-## セクションの順序・表示/非表示
+## カードのレイアウト
 
-セクションの並びは `METRICS_ORDER`（プラグイン名のカンマ区切り）で決まります。
-名前を**外せば非表示**になり、並び替えもコード変更なしで可能です:
+カードは `METRICS_ORDER` で決まります。`,` はセクションの順序（名前を**外せば
+非表示**）、`|` はカードを横並びのカラムに分割します:
 
 ```bash
-METRICS_ORDER=header,languages,activity npm start   # activity ⇄ languages を入替
-METRICS_ORDER=header,activity npm start             # languages を非表示
+METRICS_ORDER="header,activity,repositories,languages" npm start  # 単一カラム
+METRICS_ORDER="header,activity | repositories,languages" npm start  # 2 カラム
+METRICS_ORDER=header,activity npm start                           # 残りを非表示
 ```
 
 Activity の各行も `METRICS_ACTIVITY`（`commits,reviews,prs,issues,comments` の
@@ -67,7 +68,7 @@ METRICS_TERMINAL="profile,activity | repositories,languages" npm start  # 2 ペ�
 METRICS_TERMINAL="languages | profile" npm start                        # 左右の順序
 ```
 
-デフォルトは `METRICS_ORDER=header,activity,repositories,languages`、
+デフォルトは `METRICS_ORDER=header,activity | repositories,languages`、
 `METRICS_ACTIVITY=commits,reviews,prs,issues,comments`、
 `METRICS_TERMINAL=profile,activity | repositories,languages`。自動実行ではワークフローの
 `Generate` ステップの `env:` で設定します。

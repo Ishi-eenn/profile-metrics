@@ -33,33 +33,37 @@ const registry: Record<string, Plugin> = {
   languages: languagesPlugin,
 };
 
-// Card section order is configurable via METRICS_ORDER (comma-separated plugin
-// names) — reorder or drop sections (omit a name to hide it).
-const DEFAULT_ORDER = "header,activity,repositories,languages";
-const plugins: Plugin[] = (process.env.METRICS_ORDER ?? DEFAULT_ORDER)
-  .split(",")
-  .map((name) => name.trim())
-  .filter(Boolean)
-  .map((name) => {
-    if (!registry[name]) console.warn(`unknown plugin in METRICS_ORDER: ${name}`);
-    return registry[name];
-  })
-  .filter((plugin): plugin is Plugin => Boolean(plugin));
+// Card layout via METRICS_ORDER: "," orders sections, "|" splits the card into
+// side-by-side columns.
+const DEFAULT_ORDER = "header,activity | repositories,languages";
+const columnSpecs = (process.env.METRICS_ORDER ?? DEFAULT_ORDER)
+  .split("|")
+  .map((col) => col.split(",").map((name) => name.trim()).filter(Boolean))
+  .filter((col) => col.length);
 
-const sections: Section[] = [];
-for (const plugin of plugins) {
-  try {
-    console.log(`plugin ${plugin.name} > started`);
-    sections.push(await plugin.run(ctx));
-    console.log(`plugin ${plugin.name} > done`);
-  } catch (error) {
-    // Error isolation: one broken plugin never breaks the whole card.
-    console.error(`plugin ${plugin.name} > error:`, error);
-    sections.push(errorSection(plugin.name));
+const columns: Section[][] = [];
+for (const spec of columnSpecs) {
+  const sections: Section[] = [];
+  for (const name of spec) {
+    const plugin = registry[name];
+    if (!plugin) {
+      console.warn(`unknown plugin in METRICS_ORDER: ${name}`);
+      continue;
+    }
+    try {
+      console.log(`plugin ${plugin.name} > started`);
+      sections.push(await plugin.run(ctx));
+      console.log(`plugin ${plugin.name} > done`);
+    } catch (error) {
+      // Error isolation: one broken plugin never breaks the whole card.
+      console.error(`plugin ${plugin.name} > error:`, error);
+      sections.push(errorSection(plugin.name));
+    }
   }
+  columns.push(sections);
 }
 
-const svg = renderCard(sections);
+const svg = renderCard(columns);
 await fs.writeFile(output, svg, "utf8");
 console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
 

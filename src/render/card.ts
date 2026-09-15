@@ -4,12 +4,13 @@ export const WIDTH = 530;
 const PAD = 24;
 const GAP = 18;
 const TITLE_H = 24;
+const COL_GAP = 0; // extra gap between columns (each column already has PAD)
 
 /** Content width available to a section body (inside horizontal padding). */
 export const CONTENT_WIDTH = WIDTH - PAD * 2;
 
-/** Stacks sections vertically into a single self-contained SVG card. */
-export function renderCard(sections: Section[]): string {
+/** Stacks one column's sections vertically; returns its markup + height. */
+function layoutColumn(sections: Section[]): { parts: string[]; height: number } {
   let y = PAD;
   const parts: string[] = [];
 
@@ -24,9 +25,23 @@ export function renderCard(sections: Section[]): string {
     y += section.height + GAP;
   }
 
-  const height = Math.round(y - GAP + PAD);
+  return { parts, height: Math.round(y - GAP + PAD) };
+}
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${height}" viewBox="0 0 ${WIDTH} ${height}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+/**
+ * Renders one or more columns of sections side by side into a single SVG card.
+ * A single column behaves like a normal (unsplit) card.
+ */
+export function renderCard(columns: Section[][]): string {
+  const laid = columns.map(layoutColumn);
+  const height = Math.max(PAD * 2, ...laid.map((l) => l.height));
+  const width = columns.length * WIDTH + (columns.length - 1) * COL_GAP;
+
+  const groups = laid
+    .map((l, i) => `<g transform="translate(${i * (WIDTH + COL_GAP)}, 0)">${l.parts.join("\n")}</g>`)
+    .join("\n");
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
   <style>
     /* Transparent background, no border. metrics-style neutral palette:
        a mid-gray that stays legible on both light and dark backgrounds
@@ -39,6 +54,6 @@ export function renderCard(sections: Section[]): string {
     .icon { fill: #777; }
     .error { fill: #cb2431; font-size: 13px; }
   </style>
-${parts.join("\n")}
+${groups}
 </svg>`;
 }

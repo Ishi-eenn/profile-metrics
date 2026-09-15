@@ -5,6 +5,7 @@ import { renderTerminal, type Line } from "./render/terminal";
 import { headerPlugin, profileLines, fetchProfile } from "./features/header";
 import { languagesPlugin, languageLines, fetchLanguages } from "./features/languages";
 import { activityPlugin, activityLines, fetchActivity } from "./features/activity";
+import { repositoriesPlugin, repositoryLines, fetchRepositories } from "./features/repositories";
 import type { Plugin, PluginContext, Section } from "./types";
 
 const user = process.env.METRICS_USER ?? "Ishi-eenn";
@@ -28,12 +29,13 @@ const ctx: PluginContext = {
 const registry: Record<string, Plugin> = {
   header: headerPlugin,
   activity: activityPlugin,
+  repositories: repositoriesPlugin,
   languages: languagesPlugin,
 };
 
 // Card section order is configurable via METRICS_ORDER (comma-separated plugin
 // names) — reorder or drop sections (omit a name to hide it).
-const DEFAULT_ORDER = "header,activity,languages";
+const DEFAULT_ORDER = "header,activity,repositories,languages";
 const plugins: Plugin[] = (process.env.METRICS_ORDER ?? DEFAULT_ORDER)
   .split(",")
   .map((name) => name.trim())
@@ -65,7 +67,7 @@ console.log(`Wrote ${output} (${svg.length} bytes) for @${user}`);
 // appear and in what order — e.g. "languages" for languages only, or
 // "languages,activity" to swap. Omit a name to hide that block.
 try {
-  const order = (process.env.METRICS_TERMINAL ?? "profile,activity,languages")
+  const order = (process.env.METRICS_TERMINAL ?? "profile,activity,repositories,languages")
     .split(",")
     .map((name) => name.trim())
     .filter(Boolean);
@@ -74,6 +76,7 @@ try {
   for (const name of order) {
     if (name === "profile") blocks.push(profileLines(await fetchProfile(ctx)));
     else if (name === "activity") blocks.push(activityLines(await fetchActivity(ctx)));
+    else if (name === "repositories") blocks.push(repositoryLines(await fetchRepositories(ctx)));
     else if (name === "languages") blocks.push(languageLines(await fetchLanguages(ctx)));
     else console.warn(`unknown block in METRICS_TERMINAL: ${name}`);
   }

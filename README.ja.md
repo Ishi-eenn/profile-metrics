@@ -58,6 +58,15 @@ Activity の各行も `METRICS_ACTIVITY`（`commits,reviews,prs,issues,comments`
 METRICS_ACTIVITY=commits,prs,comments npm start     # この3行だけ表示
 ```
 
+
+Languages はソースのバイト数で加重されます。`METRICS_LANGUAGES=commits` を指定すると
+コミット数での加重に切り替わり、各コミットをそのリポジトリの主言語に割り当てます。
+大きなリポジトリ 1 つに全体が支配されないぶん、実際に手を動かした割合に近くなります:
+
+```bash
+METRICS_LANGUAGES=commits npm start
+```
+
 ターミナル画像は `METRICS_TERMINAL` で制御します。`,` はブロックの順序
 （`profile,activity,repositories,languages`）、`|` はウィンドウを横並びの
 ペインに分割（tmux 風）します:
@@ -70,7 +79,8 @@ METRICS_TERMINAL="languages | profile" npm start                        # 左右
 
 デフォルトは `METRICS_ORDER=header,activity | repositories,languages`、
 `METRICS_ACTIVITY=commits,reviews,prs,issues,comments`、
-`METRICS_TERMINAL=profile,activity | repositories,languages`。自動実行ではワークフローの
+`METRICS_TERMINAL=profile,activity | repositories,languages`、
+`METRICS_LANGUAGES=bytes`。自動実行ではワークフローの
 `Generate` ステップの `env:` で設定します。
 
 ## ローカル実行

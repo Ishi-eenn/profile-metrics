@@ -2,13 +2,6 @@ import type { PluginContext } from "../../types";
 
 const TOP_N = 8;
 
-/**
- * How language share is weighted:
- *   bytes   — source bytes across owned repositories (default)
- *   commits — commits per repository, attributed to that repo's primary language
- */
-const MODE = process.env.METRICS_LANGUAGES ?? "bytes";
-
 export interface LanguageStat {
   name: string;
   color: string;
@@ -20,11 +13,10 @@ interface Total {
   color: string;
 }
 
-const DEFAULT_COLOR = "#858585";
-
 /** Aggregates language weights across owned repositories into top-N percentages. */
 export async function fetchLanguages(ctx: PluginContext): Promise<LanguageStat[]> {
-  const totals = MODE === "commits" ? await commitTotals(ctx) : await byteTotals(ctx);
+  const commitWeighted = process.env.METRICS_LANGUAGES === "commits";
+  const totals = commitWeighted ? await commitTotals(ctx) : await byteTotals(ctx);
 
   const sorted = [...totals.entries()]
     .sort((a, b) => b[1].size - a[1].size)
@@ -95,8 +87,8 @@ async function commitTotals(ctx: PluginContext): Promise<Map<string, Total>> {
   );
 
   const totals = new Map<string, Total>();
-  for (const year of years) {
-    for (const entry of data.user[`y${year}`].commitContributionsByRepository) {
+  for (const slice of Object.values<any>(data.user)) {
+    for (const entry of slice.commitContributionsByRepository) {
       const lang = entry.repository.primaryLanguage;
       if (!lang) continue;
       add(totals, lang.name, lang.color, entry.contributions.totalCount);
@@ -113,7 +105,7 @@ export function yearsSince(createdAt: string, now = new Date()): number[] {
 }
 
 function add(totals: Map<string, Total>, name: string, color: string | null, size: number): void {
-  const entry = totals.get(name) ?? { size: 0, color: color ?? DEFAULT_COLOR };
+  const entry = totals.get(name) ?? { size: 0, color: color ?? "#858585" };
   entry.size += size;
   totals.set(name, entry);
 }

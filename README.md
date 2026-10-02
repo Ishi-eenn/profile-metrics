@@ -56,6 +56,16 @@ Activity rows are likewise controlled by `METRICS_ACTIVITY` (any subset/order of
 METRICS_ACTIVITY=commits,prs,comments npm start     # only these three rows
 ```
 
+
+The languages block is weighted by source bytes. `METRICS_LANGUAGES=commits`
+weights it by commits instead, attributing each commit to its repository's
+primary language — closer to where the work went, since a single large
+repository no longer dominates the share:
+
+```bash
+METRICS_LANGUAGES=commits npm start
+```
+
 The terminal image is controlled by `METRICS_TERMINAL`: `,` orders blocks
 (`profile,activity,repositories,languages`), and `|` splits the window into
 side-by-side panes (tmux-style):
@@ -68,7 +78,8 @@ METRICS_TERMINAL="languages | profile" npm start                        # right/
 
 Defaults: `METRICS_ORDER=header,activity | repositories,languages`,
 `METRICS_ACTIVITY=commits,reviews,prs,issues,comments`,
-`METRICS_TERMINAL=profile,activity | repositories,languages`. Set them in the
+`METRICS_TERMINAL=profile,activity | repositories,languages`,
+`METRICS_LANGUAGES=bytes`. Set them in the
 workflow's `Generate` step `env:` for automated runs.
 
 ## Run locally

@@ -6,7 +6,8 @@
   "description": "Minimal, metrics-style GitHub profile SVG generator (plugin-based).",
   "scripts": {
     "start": "tsx src/index.ts",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p .",
+    "test": "tsx --test \"src/**/*.test.ts\""
   },
   "devDependencies": {
     "@types/node": "^20.14.0",

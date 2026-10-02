@@ -1,5 +1,31 @@
 import type { GraphqlFn, RestGetFn } from "./types";
 
+interface PageInfo {
+  hasNextPage: boolean;
+  endCursor: string | null;
+}
+
+/**
+ * Walks a GraphQL connection page by page. `query` must accept an $endCursor
+ * variable and select `pageInfo { hasNextPage endCursor }` on the connection;
+ * `connection` locates that connection in a response. Each page's full response
+ * is yielded, so callers can read sibling fields alongside the nodes.
+ */
+export async function* pages(
+  graphql: GraphqlFn,
+  query: string,
+  variables: Record<string, unknown>,
+  connection: (data: any) => { pageInfo: PageInfo },
+): AsyncGenerator<any> {
+  let endCursor: string | null = null;
+  do {
+    const data: any = await graphql(query, { ...variables, endCursor });
+    yield data;
+    const info: PageInfo = connection(data).pageInfo;
+    endCursor = info.hasNextPage ? info.endCursor : null;
+  } while (endCursor);
+}
+
 /** Creates a minimal GitHub GraphQL client backed by the global fetch. */
 export function makeGraphql(token: string): GraphqlFn {
   return async function graphql(query, variables = {}) {

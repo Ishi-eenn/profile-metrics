@@ -1,3 +1,4 @@
+import { pages } from "../../github";
 import type { PluginContext } from "../../types";
 
 export interface RepoStats {
@@ -54,30 +55,35 @@ async function fetchLines(
 
 /** Aggregate lifetime repository stats across owned repositories. */
 export async function fetchRepositories(ctx: PluginContext): Promise<RepoStats> {
-  const data = await ctx.graphql(
-    `query($login: String!) {
-      user(login: $login) {
-        sponsors { totalCount }
-        repositories(first: 100, ownerAffiliations: OWNER, isFork: false) {
-          totalCount
-          nodes {
-            name
-            licenseInfo { nickname name }
-            releases { totalCount }
-            packages { totalCount }
-            diskUsage
-            stargazerCount
-            forkCount
-            watchers { totalCount }
-            languages(first: 20) { nodes { name } }
-          }
+  const query = `query($login: String!, $endCursor: String) {
+    user(login: $login) {
+      sponsors { totalCount }
+      repositories(first: 100, after: $endCursor, ownerAffiliations: OWNER, isFork: false) {
+        totalCount
+        pageInfo { hasNextPage endCursor }
+        nodes {
+          name
+          licenseInfo { nickname name }
+          releases { totalCount }
+          packages { totalCount }
+          diskUsage
+          stargazerCount
+          forkCount
+          watchers { totalCount }
+          languages(first: 20) { nodes { name } }
         }
       }
-    }`,
-    { login: ctx.user },
-  );
+    }
+  }`;
 
-  const nodes: any[] = data.user.repositories.nodes;
+  const nodes: any[] = [];
+  let sponsors = 0;
+  let totalRepositories = 0;
+  for await (const data of pages(ctx.graphql, query, { login: ctx.user }, (d) => d.user.repositories)) {
+    nodes.push(...data.user.repositories.nodes);
+    sponsors = data.user.sponsors.totalCount;
+    totalRepositories = data.user.repositories.totalCount;
+  }
 
   const licenses = new Map<string, number>();
   const languages = new Set<string>();
@@ -107,14 +113,14 @@ export async function fetchRepositories(ctx: PluginContext): Promise<RepoStats> 
   const lines = await fetchLines(ctx, nodes.map((r) => r.name));
 
   return {
-    repositories: data.user.repositories.totalCount,
+    repositories: totalRepositories,
     license: topLicense ?? "No license preference",
     releases,
     packages,
     disk: humanDisk(diskKb),
     linesAdded: lines.added,
     linesRemoved: lines.removed,
-    sponsors: data.user.sponsors.totalCount,
+    sponsors,
     stargazers,
     forkers,
     watchers,

@@ -1,3 +1,4 @@
+import { pages } from "../../github";
 import type { PluginContext } from "../../types";
 
 const TOP_N = 8;
@@ -32,25 +33,25 @@ export async function fetchLanguages(ctx: PluginContext): Promise<LanguageStat[]
 
 /** Source bytes per language, summed over owned repositories. */
 async function byteTotals(ctx: PluginContext): Promise<Map<string, Total>> {
-  const data = await ctx.graphql(
-    `query($login: String!) {
-      user(login: $login) {
-        repositories(first: 100, ownerAffiliations: OWNER, isFork: false, orderBy: {field: PUSHED_AT, direction: DESC}) {
-          nodes {
-            languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
-              edges { size node { name color } }
-            }
+  const query = `query($login: String!, $endCursor: String) {
+    user(login: $login) {
+      repositories(first: 100, after: $endCursor, ownerAffiliations: OWNER, isFork: false) {
+        pageInfo { hasNextPage endCursor }
+        nodes {
+          languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+            edges { size node { name color } }
           }
         }
       }
-    }`,
-    { login: ctx.user },
-  );
+    }
+  }`;
 
   const totals = new Map<string, Total>();
-  for (const repo of data.user.repositories.nodes) {
-    for (const edge of repo.languages.edges) {
-      add(totals, edge.node.name, edge.node.color, edge.size);
+  for await (const data of pages(ctx.graphql, query, { login: ctx.user }, (d) => d.user.repositories)) {
+    for (const repo of data.user.repositories.nodes) {
+      for (const edge of repo.languages.edges) {
+        add(totals, edge.node.name, edge.node.color, edge.size);
+      }
     }
   }
   return totals;

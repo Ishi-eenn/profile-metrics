@@ -119,3 +119,7 @@ workflow uses it automatically when present.
    re-exporting them.
 2. Register the plugin in `registry` in `src/index.ts` (and, if it has a
    terminal block, wire it into the `METRICS_TERMINAL` handling there).
+
+## License
+
+[MIT](LICENSE)

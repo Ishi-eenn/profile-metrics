@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Minimal, metrics-style GitHub profile SVG generator (plugin-based).",
+  "license": "MIT",
   "scripts": {
     "start": "tsx src/index.ts",
     "typecheck": "tsc -p .",

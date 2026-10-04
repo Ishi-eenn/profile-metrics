@@ -120,3 +120,7 @@ GITHUB_TOKEN=$(gh auth token) METRICS_USER=<あなたのログイン名> npm sta
    `index.ts` を置きます。
 2. `src/index.ts` の `registry` に登録します（ターミナルブロックがある場合は
    `METRICS_TERMINAL` の処理にも組み込みます）。
+
+## ライセンス
+
+[MIT](LICENSE)

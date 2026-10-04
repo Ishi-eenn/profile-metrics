@@ -46,7 +46,10 @@ jobs:
       #   PRs / other refs -> metrics-preview (throwaway preview of that build)
       # `single-commit` keeps each branch at exactly one commit (no history buildup),
       # and main itself is never modified by the bot.
+      # Fork PRs get a read-only GITHUB_TOKEN, so the deploy would 403. Skip
+      # publishing for them; push / scheduled / same-repo PRs still publish.
       - name: Publish SVG
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: ${{ github.ref == 'refs/heads/main' && 'metrics-output' || 'metrics-preview' }}

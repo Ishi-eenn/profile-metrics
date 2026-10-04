@@ -1,3 +1,4 @@
+import { pages } from "../../github";
 import type { PluginContext } from "../../types";
 
 const TOP_N = 8;
@@ -10,30 +11,30 @@ export interface LanguageStat {
 
 /** Aggregates language bytes across owned repositories into top-N percentages. */
 export async function fetchLanguages(ctx: PluginContext): Promise<LanguageStat[]> {
-  const data = await ctx.graphql(
-    `query($login: String!) {
-      user(login: $login) {
-        repositories(first: 100, ownerAffiliations: OWNER, isFork: false, orderBy: {field: PUSHED_AT, direction: DESC}) {
-          nodes {
-            languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
-              edges { size node { name color } }
-            }
+  const query = `query($login: String!, $endCursor: String) {
+    user(login: $login) {
+      repositories(first: 100, after: $endCursor, ownerAffiliations: OWNER, isFork: false) {
+        pageInfo { hasNextPage endCursor }
+        nodes {
+          languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+            edges { size node { name color } }
           }
         }
       }
-    }`,
-    { login: ctx.user },
-  );
+    }
+  }`;
 
   const totals = new Map<string, { size: number; color: string }>();
-  for (const repo of data.user.repositories.nodes) {
-    for (const edge of repo.languages.edges) {
-      const entry = totals.get(edge.node.name) ?? {
-        size: 0,
-        color: edge.node.color ?? "#858585",
-      };
-      entry.size += edge.size;
-      totals.set(edge.node.name, entry);
+  for await (const data of pages(ctx.graphql, query, { login: ctx.user }, (d) => d.user.repositories)) {
+    for (const repo of data.user.repositories.nodes) {
+      for (const edge of repo.languages.edges) {
+        const entry = totals.get(edge.node.name) ?? {
+          size: 0,
+          color: edge.node.color ?? "#858585",
+        };
+        entry.size += edge.size;
+        totals.set(edge.node.name, entry);
+      }
     }
   }
 

@@ -41,12 +41,24 @@ jobs:
           cp metrics.svg public/metrics.svg
           cp terminal.svg public/terminal.svg
 
+      # Upload the SVGs as a build artifact. This works even with the read-only
+      # GITHUB_TOKEN of fork PRs, so the generated images can be downloaded from
+      # the Actions run page when the preview branch can't be published.
+      - name: Upload SVG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-svg
+          path: public
+
       # Publish the SVG to a branch so it can be viewed directly via a raw URL:
       #   main / scheduled -> metrics-output  (production; referenced by the profile)
       #   PRs / other refs -> metrics-preview (throwaway preview of that build)
       # `single-commit` keeps each branch at exactly one commit (no history buildup),
       # and main itself is never modified by the bot.
+      # Fork PRs get a read-only GITHUB_TOKEN, so the deploy would 403. Skip
+      # publishing for them; push / scheduled / same-repo PRs still publish.
       - name: Publish SVG
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: ${{ github.ref == 'refs/heads/main' && 'metrics-output' || 'metrics-preview' }}

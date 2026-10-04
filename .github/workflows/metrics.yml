@@ -41,6 +41,15 @@ jobs:
           cp metrics.svg public/metrics.svg
           cp terminal.svg public/terminal.svg
 
+      # Upload the SVGs as a build artifact. This works even with the read-only
+      # GITHUB_TOKEN of fork PRs, so the generated images can be downloaded from
+      # the Actions run page when the preview branch can't be published.
+      - name: Upload SVG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrics-svg
+          path: public
+
       # Publish the SVG to a branch so it can be viewed directly via a raw URL:
       #   main / scheduled -> metrics-output  (production; referenced by the profile)
       #   PRs / other refs -> metrics-preview (throwaway preview of that build)

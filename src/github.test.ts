@@ -8,7 +8,7 @@ test("pages walks every page and stops at the last", async () => {
     { user: { repos: { pageInfo: { hasNextPage: false, endCursor: null }, nodes: [3] } } },
   ];
   const cursors: unknown[] = [];
-  const graphql = async (_q: string, vars: any = {}) => {
+  const graphql = async (_q: string, vars: any = {}): Promise<any> => {
     cursors.push(vars.endCursor);
     return responses[cursors.length - 1];
   };
